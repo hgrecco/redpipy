@@ -61,3 +61,4 @@ pythonpath = "src"
 [tool.ruff]
 select = ["E", "F", "I"]
 extend-include = ["*.ipynb"]
+exclude = ["csrc/sources"]
