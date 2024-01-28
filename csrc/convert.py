@@ -11,6 +11,11 @@ import stringcase
 from cxxheaderparser import types as cxxtypes
 from cxxheaderparser.simple import ParsedData, parse_string
 
+FUNCTIONS_TO_SKIP = [
+    "rp_createBuffer",
+    "rp_deleteBuffer",
+]
+
 
 def camel_to_snake_case(name: str) -> str:
     name = (
@@ -128,7 +133,9 @@ class Doc:
         for name, pdoc in self.parameters.items():
             if name in include:
                 py_doc += camel_to_snake_case(name) + "\n"
-                py_doc += textwrap.fill(pdoc, initial_indent=TAB, subsequent_indent=TAB)
+                py_doc += textwrap.fill(
+                    pdoc, initial_indent=INDENT, subsequent_indent=INDENT
+                )
                 use_pydoc = True
 
         c_doc = "\n\n"
@@ -138,7 +145,9 @@ class Doc:
         for name, pdoc in self.parameters.items():
             if name not in include:
                 c_doc += camel_to_snake_case(name) + "\n"
-                c_doc += textwrap.fill(pdoc, initial_indent=TAB, subsequent_indent=TAB)
+                c_doc += textwrap.fill(
+                    pdoc, initial_indent=INDENT, subsequent_indent=INDENT
+                )
                 use_cdoc = True
 
         if use_pydoc:
@@ -147,7 +156,7 @@ class Doc:
             doc += c_doc
 
         doc = f'''"""{doc}\n"""'''
-        return textwrap.indent(doc, TAB)
+        return textwrap.indent(doc, INDENT)
 
 
 PATH = pathlib.Path(__file__).parent
@@ -161,7 +170,7 @@ commit_id = (SOURCE_PATH / "sha.txt").read_text().strip("\n")
 
 MODULE_TEMPLATE = (PATH / "_template.tmpl").read_text()
 
-TAB = " " * 4
+INDENT = " " * 4
 
 ENUMS = dict(
     rp_dpin_t="Pin",
@@ -361,6 +370,7 @@ def get_guess(parameters: list[Parameter]) -> tuple[str, tuple[Parameter, ...]]:
     return "unknown", ()
 
 
+log = print
 for filename in ("acq", "acq_axi", "gen", "rp"):
     if filename == "rp":
         cfilename = "rp.h"
@@ -369,18 +379,57 @@ for filename in ("acq", "acq_axi", "gen", "rp"):
 
     pymodule_name = f"{filename}.py"
 
+    log(f"Converting {filename} -> {pymodule_name}")
+
     content = io.StringIO()
 
     def o_print(s: str) -> int:
         return content.write(s)
 
+    skipped_functions: list[str] = []
+
     for func in my_parse_file(SOURCE_PATH / cfilename).namespace.functions:
+        msg = ""
         func_cname: str = func.name.segments[0].name
+
+        if func_cname in FUNCTIONS_TO_SKIP:
+            log(f"- Skipping {func_cname}")
+            skipped_functions.append(func_cname)
+            continue
+
         func_pyname = format_func_name(func_cname[3:], filename + "_")
+
+        log(f"- Converting {func_cname} -> {func_pyname}")
 
         is_getter = "Get" in func_cname
         is_setter = "Set" in func_cname
         is_call = False
+
+        # If the return type is int, it might return a status code.
+        # If the return type is not int, it does not return a status code.
+        cfunc_has_status_code_by_rtype = (
+            not isinstance(func.return_type, cxxtypes.Pointer)
+            and func.return_type.typename.segments[0].name == "int"
+        )
+
+        # If the docstring says RP_OK, it returns a status code.
+        # If the docstring does not say RP_OK, it migh return a status code.
+        cfunc_has_status_code_by_doc = "RP_OK" in (func.doxygen or "")
+
+        if cfunc_has_status_code_by_rtype and cfunc_has_status_code_by_doc:
+            cfunc_has_status_code = True
+        elif not cfunc_has_status_code_by_rtype and not cfunc_has_status_code_by_doc:
+            cfunc_has_status_code = False
+        else:
+            # guesses do not agree
+            if not cfunc_has_status_code_by_doc and cfunc_has_status_code_by_rtype:
+                # it might be missing in the docs.
+                cfunc_has_status_code = True
+                log("  guessing status code: True")
+            else:
+                cfunc_has_status_code = None
+                log("  Inconsistent guess status code")
+
         if is_getter and is_setter:
             warn(f"In {filename}, {func_cname} is both getter and setter")
         elif not (is_getter or is_setter):
@@ -411,9 +460,7 @@ for filename in ("acq", "acq_axi", "gen", "rp"):
         count_pointers = sum(param.is_pointer for param in parameters)
 
         pyout_type = "None"
-        error_code = True
         if is_getter:
-            # Find the output
             if has_buffer:
                 if len(parameters) == 1:
                     out = parameters.pop()
@@ -473,8 +520,6 @@ for filename in ("acq", "acq_axi", "gen", "rp"):
                 elif count_pointers == 0:
                     # This function does not return an error code
                     # i.e. math functinos
-                    error_code = False
-
                     if isinstance(func.return_type, cxxtypes.Pointer):
                         if func.return_type.ptr_to.typename.segments[0].name == "char":
                             pyout_type = "str"
@@ -492,8 +537,8 @@ for filename in ("acq", "acq_axi", "gen", "rp"):
                     )
                     post_call = ["return __value"]
 
-        pre = TAB + ("\n" + TAB).join(pre_call)
-        post = TAB + ("\n" + TAB).join(post_call)
+        pre = INDENT + ("\n" + INDENT).join(pre_call)
+        post = INDENT + ("\n" + INDENT).join(post_call)
 
         kwargs = dict(
             func_pyname=func_pyname,
@@ -508,19 +553,28 @@ for filename in ("acq", "acq_axi", "gen", "rp"):
         )
 
         if is_getter:
-            if error_code:
-                # we assumme that the last
+            if cfunc_has_status_code:
                 o_print(GETTER_TEMPLATE_WITH_ERROR_CODE.format(**kwargs))
             else:
                 o_print(GETTER_TEMPLATE_NO_ERROR_CODE.format(**kwargs))
-
         elif is_setter:
-            if error_code:
+            if cfunc_has_status_code:
                 o_print(SETTER_TEMPLATE_WITH_ERROR_CODE.format(**kwargs))
             else:
                 o_print(SETTER_TEMPLATE_NO_ERROR_CODE.format(**kwargs))
         elif is_call:
-            pass
+            if cfunc_has_status_code:
+                o_print(SETTER_TEMPLATE_WITH_ERROR_CODE.format(**kwargs))
+            else:
+                o_print(SETTER_TEMPLATE_NO_ERROR_CODE.format(**kwargs))
+
+    if skipped_functions:
+        msg = "Skipped functions\n"
+        msg += "-----------------\n"
+        msg += "\n".join(("- " + s) for s in skipped_functions)
+        msg = "\n" + textwrap.indent(msg, INDENT) + "\n"
+    else:
+        msg = ""
 
     with (CONVERTED_PATH / pymodule_name).open("w", encoding="UTF-8") as fo:
         qualname = "redpipy." + pymodule_name[:-3]
@@ -531,9 +585,9 @@ for filename in ("acq", "acq_axi", "gen", "rp"):
                 content=content.getvalue(),
                 original_file=cfilename,
                 commit_id=commit_id,
+                msg=msg,
             )
         )
 
-    print(pymodule_name)
     subprocess.run(["ruff", "format", str(CONVERTED_PATH / pymodule_name)])
     subprocess.run(["ruff", "--fix", str(CONVERTED_PATH / pymodule_name)])
