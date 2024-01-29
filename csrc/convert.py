@@ -327,11 +327,13 @@ def parse_doc(doc: str | None) -> Doc:
             break
         main += " " + line.strip()
 
-    tmp = [line]
-    if line.startswith("@"):
-        tmp.append(line.strip())
-    else:
-        tmp[-1] += " " + line.strip()
+    tmp: list[str] = [line]
+    while pending:
+        line = pending.pop().strip()
+        if line.startswith("@"):
+            tmp.append(line.strip())
+        else:
+            tmp[-1] += " " + line.strip()
 
     for el in tmp:
         if not el.strip():
