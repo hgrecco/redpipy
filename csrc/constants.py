@@ -61,8 +61,8 @@ class OutTriggerMode(enum.Enum):
     # TODO: this is wrong
     """
 
-    ADC = 0  #  ADC trigger
-    DAC = 1  #  DAC trigger
+    ADC = rp.OUT_TR_ADC  #  ADC trigger
+    DAC = rp.OUT_TR_DAC  #  DAC trigger
 
 
 class PinDirection(enum.Enum):
@@ -121,33 +121,33 @@ class GenSweepMode(enum.Enum):
 
 
 class TriggerSource(enum.Enum):
-    INTERNAL = 1  #  Internal trigger source
-    EXT_PE = 2  #  External trigger source positive edge
-    EXT_NE = 3  #  External trigger source negative edge
+    INTERNAL = rp.RP_GEN_TRIG_SRC_INTERNAL  #  Internal trigger source
+    EXT_PE = rp.RP_GEN_TRIG_SRC_EXT_PE  #  External trigger source positive edge
+    EXT_NE = rp.RP_GEN_TRIG_SRC_EXT_NE  #  External trigger source negative edge
 
 
 class GenGain(enum.Enum):
-    X1 = 0  #  Set output gain in x1 mode
-    X5 = 1  #  Set output gain in x5 mode
+    X1 = rp.RP_GAIN_1X  #  Set output gain in x1 mode
+    X5 = rp.RP_GAIN_5X  #  Set output gain in x5 mode
 
 
 class Channel(enum.Enum):
     """Type representing Input/Output channels."""
 
-    CH_1 = 0  #  Channel A
-    CH_2 = 1  #  Channel B
-    CH_3 = 2  #  Channel C
-    CH_4 = 3  #  Channel D
+    CH_1 = rp.RP_CH_1  #  Channel A
+    CH_2 = rp.RP_CH_2  #  Channel B
+    CH_3 = rp.RP_CH_3  #  Channel C
+    CH_4 = rp.RP_CH_4  #  Channel D
 
 
 class TriggerChannel(enum.Enum):
     """Type representing Input/Output channels in trigger."""
 
-    CH_1 = 0  #  Channel A
-    CH_2 = 1  #  Channel B
-    CH_3 = 2  #  Channel C
-    CH_4 = 3  #  Channel D
-    CH_EXT = 4
+    CH_1 = rp.RP_T_CH_1  #  Channel A
+    CH_2 = rp.RP_T_CH_2  #  Channel B
+    CH_3 = rp.RP_T_CH_3  #  Channel C
+    CH_4 = rp.RP_T_CH_4  #  Channel D
+    CH_EXT = rp.RP_T_CH_EXT
 
 
 class EqFilterCoefficient(enum.Enum):
@@ -174,47 +174,55 @@ class EqFilterCoefficient(enum.Enum):
 class Decimation(enum.Enum):
     """Type representing decimation used at acquiring signal."""
 
-    DEC_1 = 1  #  Decimation 1
-    DEC_2 = 2  #  Decimation 2
-    DEC_4 = 4  #  Decimation 4
-    DEC_8 = 8  #  Decimation 8
-    DEC_16 = 16  #  Decimation 16
-    DEC_32 = 32  #  Decimation 32
-    DEC_64 = 64  #  Decimation 64
-    DEC_128 = 128  #  Decimation 128
-    DEC_256 = 256  #  Decimation 256
-    DEC_512 = 512  #  Decimation 512
-    DEC_1024 = 1024  #  Decimation 1024
-    DEC_2048 = 2048  #  Decimation 2048
-    DEC_4096 = 4096  #  Decimation 4096
-    DEC_8192 = 8192  #  Decimation 8192
-    DEC_16384 = 16384  #  Decimation 16384
-    DEC_32768 = 32768  #  Decimation 32768
-    DEC_65536 = 65536  #  Decimation 65536
+    DEC_1 = rp.DEC_1  #  Decimation 1
+    DEC_2 = rp.DEC_2  #  Decimation 2
+    DEC_4 = rp.DEC_4  #  Decimation 4
+    DEC_8 = rp.DEC_8  #  Decimation 8
+    DEC_16 = rp.DEC_16  #  Decimation 16
+    DEC_32 = rp.DEC_32  #  Decimation 32
+    DEC_64 = rp.DEC_64  #  Decimation 64
+    DEC_128 = rp.DEC_128  #  Decimation 128
+    DEC_256 = rp.DEC_256  #  Decimation 256
+    DEC_512 = rp.DEC_512  #  Decimation 512
+    DEC_1024 = rp.DEC_1024  #  Decimation 1024
+    DEC_2048 = rp.DEC_2048  #  Decimation 2048
+    DEC_4096 = rp.DEC_4096  #  Decimation 4096
+    DEC_8192 = rp.DEC_8192  #  Decimation 8192
+    DEC_16384 = rp.DEC_16384  #  Decimation 16384
+    DEC_32768 = rp.DEC_32768  #  Decimation 32768
+    DEC_65536 = rp.DEC_65536  #  Decimation 65536
 
 
 class AcqMode(enum.Enum):
-    DC = (0,)
-    AC = 1
+    DC = rp.RP_DC
+    AC = rp.RP_AC
 
 
 class AcqTriggerSource(enum.Enum):
     """Type representing different trigger sources used at acquiring signal."""
 
-    DISABLED = 0  #  Trigger is disabled
-    NOW = 1  #  Trigger triggered now (immediately)
-    CHA_PE = 2  #  Trigger set to Channel A threshold positive edge
-    CHA_NE = 3  #  Trigger set to Channel A threshold negative edge
-    CHB_PE = 4  #  Trigger set to Channel B threshold positive edge
-    CHB_NE = 5  #  Trigger set to Channel B threshold negative edge
-    EXT_PE = 6  #  Trigger set to external trigger positive edge (DIO0_P pin)
-    EXT_NE = 7  #  Trigger set to external trigger negative edge (DIO0_P pin)
-    AWG_PE = 8  #  Trigger set to arbitrary wave Gen application positive edge
-    AWG_NE = 9  #  Trigger set to arbitrary wave Gen application negative edge
-    CHC_PE = 10  #  Trigger set to Channel C threshold positive edge
-    CHC_NE = 11  #  Trigger set to Channel C threshold negative edge
-    CHD_PE = 12  #  Trigger set to Channel D threshold positive edge
-    CHD_NE = 13  #  Trigger set to Channel D threshold negative edge
+    DISABLED = rp.RP_TRIG_SRC_DISABLED  #  Trigger is disabled
+    NOW = rp.RP_TRIG_SRC_NOW  #  Trigger triggered now (immediately)
+    CHA_PE = rp.RP_TRIG_SRC_CHA_PE  #  Trigger set to Channel A threshold positive edge
+    CHA_NE = rp.RP_TRIG_SRC_CHA_NE  #  Trigger set to Channel A threshold negative edge
+    CHB_PE = rp.RP_TRIG_SRC_CHB_PE  #  Trigger set to Channel B threshold positive edge
+    CHB_NE = rp.RP_TRIG_SRC_CHB_NE  #  Trigger set to Channel B threshold negative edge
+    EXT_PE = (
+        rp.RP_TRIG_SRC_EXT_PE
+    )  #  Trigger set to external trigger positive edge (DIO0_P pin)
+    EXT_NE = (
+        rp.RP_TRIG_SRC_EXT_NE
+    )  #  Trigger set to external trigger negative edge (DIO0_P pin)
+    AWG_PE = (
+        rp.RP_TRIG_SRC_AWG_PE
+    )  #  Trigger set to arbitrary wave Gen application positive edge
+    AWG_NE = (
+        rp.RP_TRIG_SRC_AWG_NE
+    )  #  Trigger set to arbitrary wave Gen application negative edge
+    CHC_PE = rp.RP_TRIG_SRC_CHC_PE  #  Trigger set to Channel C threshold positive edge
+    CHC_NE = rp.RP_TRIG_SRC_CHC_NE  #  Trigger set to Channel C threshold negative edge
+    CHD_PE = rp.RP_TRIG_SRC_CHD_PE  #  Trigger set to Channel D threshold positive edge
+    CHD_NE = rp.RP_TRIG_SRC_CHD_NE  #  Trigger set to Channel D threshold negative edge
 
 
 class AcqTriggerState(enum.Enum):
