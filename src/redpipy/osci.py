@@ -1,0 +1,272 @@
+"""
+    redpipy.osci
+    ~~~~~~~~~~~~
+
+    RedPitaya's oscilloscope.
+
+
+    :copyright: 2024 by redpipy Authors, see AUTHORS for more details.
+    :license: BSD, see LICENSE for more details.
+"""
+
+import time
+from datetime import datetime, timezone
+from typing import Any, Generator, Literal
+
+import numpy as np
+import numpy.typing as npt
+import pandas as pd
+
+from . import common
+from .rpwrap import acq, constants, rp
+
+
+def get_maximum_sampling_rate() -> float:
+    acq.set_decimation(constants.Decimation.DEC_1)
+    return acq.get_sampling_rate_hz()
+
+
+#: Samples per second
+MAXIMUM_SAMPLING_RATE = 125e6  # get_maximum_sampling_rate()
+
+
+def calculate_best_decimation(trace_duration: float) -> constants.Decimation:
+    """Calculate the best decimation in order to acquire a signal
+    of a certain duration.
+
+    Parameter
+    ---------
+    trace_duration
+        Duration of the trace in seconds
+    """
+
+    for exponent in range(17):
+        decimation = int(2**exponent)
+        sampling_rate = MAXIMUM_SAMPLING_RATE / decimation
+        current_trace_duration = constants.ADC_BUFFER_SIZE / sampling_rate
+        if current_trace_duration >= trace_duration:
+            return getattr(constants.Decimation, "DEC_{:d}".format(decimation))
+
+    raise ValueError(
+        "Could not find suitable decimation value " "for {trace_duration} seconds."
+    )
+
+
+_TRIGGER_MAP = common.TwoWayDict[
+    tuple[Literal["ch1", "ch2", "ext"], bool], constants.AcqTriggerSource
+](
+    {
+        ("ch1", True): constants.AcqTriggerSource.CHA_PE,
+        ("ch1", False): constants.AcqTriggerSource.CHA_NE,
+        ("ch2", True): constants.AcqTriggerSource.CHB_PE,
+        ("ch2", False): constants.AcqTriggerSource.CHB_PE,
+        ("ext", True): constants.AcqTriggerSource.EXT_PE,
+        ("ext", False): constants.AcqTriggerSource.EXT_NE,
+    }
+)
+
+_TRIGGER_CH_MAP = common.TwoWayDict[
+    Literal["ch1", "ch2", "ext"], constants.TriggerChannel
+](
+    {
+        "ch1": constants.TriggerChannel.CH_1,
+        "ch2": constants.TriggerChannel.CH_2,
+        "ext": constants.TriggerChannel.CH_EXT,
+    }
+)
+
+
+class Channel:
+    """Osciloscope channel."""
+
+    channel: constants.Channel
+
+    # Is there a real way to enable/disable a channel?
+    enabled: bool = False
+
+    def __init__(self, channel: Literal[1, 2]):
+        if channel == 1:
+            self.channel = constants.Channel.CH_1
+        elif channel == 2:
+            self.channel = constants.Channel.CH_2
+
+        self.enabled = False
+
+    def get_trace(self) -> npt.NDArray[np.float32]:
+        """Get trace (in volts)."""
+        return acq.get_latest_datav(self.channel)
+
+    def get_trace_raw(self) -> npt.NDArray[np.int16]:
+        """Get trace (in ADU)."""
+        return acq.get_oldest_data_raw(self.channel)
+
+
+class Osciloscope:
+    """Osciloscope"""
+
+    def __init__(self) -> None:
+        self.device_metadata = {
+            "FPGA Unique DNA": rp.id_get_dna(),
+            "FPGA Synthesized ID": rp.id_get_id(),
+            "Library Version": rp.get_version(),
+        }
+        self.channel1 = Channel(1)
+        self.channel2 = Channel(2)
+
+    def get_metadata(self) -> Generator[tuple[Any, Any], Any, None]:
+        yield from self.device_metadata.items()
+        yield from self.get_timebase_settings().items()
+        yield from self.get_trigger_settings().items()
+
+    def get_timebase_settings(self) -> dict[str, Any]:
+        """Get timebase settings."""
+        trigger_delay = acq.get_trigger_delay() - constants.ADC_BUFFER_SIZE / 2
+        sampling_rate = acq.get_sampling_rate_hz()
+        return dict(
+            decimation=acq.get_decimation_factor(),
+            sampling_rate=sampling_rate,
+            trace_duration=sampling_rate * constants.ADC_BUFFER_SIZE,
+            trigger_delay=sampling_rate * trigger_delay,
+            trigger_delay_samples=trigger_delay,
+        )
+
+    def get_trigger_settings(self) -> dict[str, Any]:
+        """Get trigger settings."""
+        trigger_src = acq.get_trigger_src()
+        if trigger_src == constants.AcqTriggerSource.DISABLED:
+            return dict(source="disabled", level=None, positive_edge=None)
+        elif trigger_src == constants.AcqTriggerSource.NOW:
+            return dict(source="now", level=None, positive_edge=None)
+
+        source, positive_edge = _TRIGGER_MAP.inv[trigger_src]
+        tch = _TRIGGER_CH_MAP[source]
+        return dict(
+            source=source,
+            level=acq.get_trigger_level(tch),
+            positive_edge=positive_edge,
+        )
+
+    def get_timevector_raw(self) -> npt.NDArray[np.int64]:
+        """Get timevector (in samples)."""
+        return (
+            np.arange(constants.ADC_BUFFER_SIZE, dtype=np.int64)
+            + acq.get_trigger_delay()
+        )
+
+    def get_timevector(self) -> npt.NDArray[np.float32]:
+        """Get timevector (in seconds)."""
+        return self.get_timevector_raw() * acq.get_sampling_rate_hz()
+
+    def get_data(self, raw: bool = False) -> pd.DataFrame:
+        """Get data (time, and traces of enabled channels"""
+        timestamp = datetime.now(tz=timezone.utc).isoformat()
+
+        if raw:
+            out: dict[str, npt.NDArray[Any]] = dict(time=self.get_timevector_raw())
+            if self.channel1.enabled:
+                out["ch1"] = self.channel1.get_trace_raw()
+            if self.channel2.enabled:
+                out["ch2"] = self.channel1.get_trace_raw()
+        else:
+            out: dict[str, npt.NDArray[Any]] = dict(time=self.get_timevector())
+            if self.channel1.enabled:
+                out["ch1"] = self.channel1.get_trace()
+            if self.channel2.enabled:
+                out["ch2"] = self.channel1.get_trace()
+
+        df = pd.DataFrame(out)
+        df.attrs["timestamp"] = timestamp
+        for k, v in self.get_metadata():
+            df.attrs[k] = v
+
+        return df
+
+    def set_trigger(
+        self,
+        *,
+        source: Literal["ch1", "ch2", "ext"] = "ch1",
+        level: float = 0,
+        positive_edge: bool = True,
+    ):
+        """Configure the trigger
+
+        Parameters
+        ----------
+        source, optional
+            Trigger source, by default "ch1"
+        level, optional
+            Trigger level (in volts), by default 0
+        positive_edge, optional
+            Triggering occurs in positive edge, by default True
+        """
+
+        src = _TRIGGER_MAP[(source, positive_edge)]
+        tch = _TRIGGER_CH_MAP[source]
+
+        acq.set_trigger_src(src)
+        acq.set_trigger_level(tch, level)
+
+    def set_timebase(
+        self, trace_duration_hint: float, trigger_position: float = 0
+    ) -> float:
+        """Configure the timebase.
+
+        The duration of acquisition window can only take certain discrete
+        values. It is guaranteed that the chosen one will be the shortest
+        one that can fit the provided trace duration hint. The actual trace
+        duration, is returned.
+
+        Trigger position
+        * 0: at the beginning of the buffer.
+        * 0.5: at the middle of the buffer.
+        * 1: at the end of the buffer.
+        * 2: at the end of the second measured buffer,
+        and so on.
+
+        Parameters
+        ----------
+        trace_duration_hint
+            Duration of the trace to be measured (in seconds).
+        trigger_position, optional
+            Position of the trigger as fraction of the buffer size, by default 0
+        """
+        acq.set_decimation(calculate_best_decimation(trace_duration_hint))
+
+        trigger_delay = int(constants.ADC_BUFFER_SIZE * (-trigger_position + 1 / 2))
+        acq.set_trigger_delay(trigger_delay)
+
+        return acq.get_sampling_rate_hz() * constants.ADC_BUFFER_SIZE
+
+    def wait_for_trigger(self):
+        """Wait until the triggering condition has been met."""
+        window_duration = acq.get_sampling_rate_hz() * constants.ADC_BUFFER_SIZE
+        sleep_duration = window_duration / 10
+        while acq.get_trigger_state() == constants.AcqTriggerState.WAITING:
+            time.sleep(sleep_duration)
+
+        # TODO: Is this necessary or the trigger is satified also when trigger delay
+        # is fullfiled?
+        time.sleep(window_duration)
+
+    def arm_trigger(self, wait: bool = True) -> None:
+        """Arm the trigger.
+
+        If wait is True (default), the thread will lock until the acquisition
+        is complete.
+        """
+        acq.reset()
+        acq.start()
+        if wait:
+            self.wait_for_trigger()
+
+    def trigger_now(self, wait: bool = True):
+        """Trigger now.
+
+        If wait is True (default), the thread will lock until the acquisition
+        is complete.
+        """
+        src = acq.get_trigger_src()
+        acq.set_trigger_src(constants.AcqTriggerSource.NOW)
+        if wait:
+            self.wait_for_trigger()
+        acq.set_trigger_src(src)

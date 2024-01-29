@@ -10,7 +10,6 @@
 
 The `redpipy` package provides a convenient way to control the [RedPitaya](https://redpitaya.com/) hardware from Python.
 
-
 # Installation
 
 Just install it using:
