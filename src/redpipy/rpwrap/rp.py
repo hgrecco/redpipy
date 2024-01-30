@@ -15,6 +15,7 @@ import rp
 
 from . import constants
 from .constants import StatusCode
+from .error import RPPError
 
 
 def init() -> None:
@@ -22,8 +23,8 @@ def init() -> None:
 
     __status_code = rp.rp_Init()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_Init", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_Init", (), __status_code)
 
 
 def init_reset(reset: bool) -> None:
@@ -31,8 +32,8 @@ def init_reset(reset: bool) -> None:
 
     __status_code = rp.rp_InitReset(reset)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_InitReset", (reset,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_InitReset", (reset,), __status_code)
 
 
 def is_api_init() -> None:
@@ -40,8 +41,8 @@ def is_api_init() -> None:
 
     __status_code = rp.rp_IsApiInit()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_IsApiInit", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_IsApiInit", (), __status_code)
 
 
 def release() -> None:
@@ -51,8 +52,8 @@ def release() -> None:
 
     __status_code = rp.rp_Release()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_Release", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_Release", (), __status_code)
 
 
 def reset() -> None:
@@ -62,8 +63,8 @@ def reset() -> None:
 
     __status_code = rp.rp_Reset()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_Reset", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_Reset", (), __status_code)
 
 
 def get_version() -> str:
@@ -101,8 +102,8 @@ def enable_digital_loop(enable: bool) -> None:
 
     __status_code = rp.rp_EnableDigitalLoop(enable)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_EnableDigitalLoop", (enable,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_EnableDigitalLoop", (enable,), __status_code)
 
 
 def id_get_id() -> int:
@@ -110,8 +111,8 @@ def id_get_id() -> int:
 
     __status_code, __value = rp.rp_IdGetID()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_IdGetID", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_IdGetID", (), __status_code)
 
     return __value
 
@@ -121,8 +122,8 @@ def id_get_dna() -> int:
 
     __status_code, __value = rp.rp_IdGetDNA()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_IdGetDNA", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_IdGetDNA", (), __status_code)
 
     return __value
 
@@ -132,8 +133,8 @@ def led_set_state(state: int) -> None:
 
     __status_code = rp.rp_LEDSetState(state)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_LEDSetState", (state,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_LEDSetState", (state,), __status_code)
 
 
 def led_get_state() -> int:
@@ -141,8 +142,8 @@ def led_get_state() -> int:
 
     __status_code, __value = rp.rp_LEDGetState()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_LEDGetState", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_LEDGetState", (), __status_code)
 
     return __value
 
@@ -152,8 +153,8 @@ def gpio_n_set_direction(direction: int) -> None:
 
     __status_code = rp.rp_GPIOnSetDirection(direction)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_GPIOnSetDirection", (direction,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GPIOnSetDirection", (direction,), __status_code)
 
 
 def gpio_n_get_direction() -> int:
@@ -161,8 +162,8 @@ def gpio_n_get_direction() -> int:
 
     __status_code, __value = rp.rp_GPIOnGetDirection()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_GPIOnGetDirection", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GPIOnGetDirection", (), __status_code)
 
     return __value
 
@@ -172,8 +173,8 @@ def gpio_n_set_state(state: int) -> None:
 
     __status_code = rp.rp_GPIOnSetState(state)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_GPIOnSetState", (state,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GPIOnSetState", (state,), __status_code)
 
 
 def gpio_n_get_state() -> int:
@@ -181,8 +182,8 @@ def gpio_n_get_state() -> int:
 
     __status_code, __value = rp.rp_GPIOnGetState()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_GPIOnGetState", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GPIOnGetState", (), __status_code)
 
     return __value
 
@@ -192,8 +193,8 @@ def gpio_p_set_direction(direction: int) -> None:
 
     __status_code = rp.rp_GPIOpSetDirection(direction)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_GPIOpSetDirection", (direction,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GPIOpSetDirection", (direction,), __status_code)
 
 
 def gpio_p_get_direction() -> int:
@@ -201,8 +202,8 @@ def gpio_p_get_direction() -> int:
 
     __status_code, __value = rp.rp_GPIOpGetDirection()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_GPIOpGetDirection", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GPIOpGetDirection", (), __status_code)
 
     return __value
 
@@ -212,8 +213,8 @@ def gpio_p_set_state(state: int) -> None:
 
     __status_code = rp.rp_GPIOpSetState(state)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_GPIOpSetState", (state,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GPIOpSetState", (state,), __status_code)
 
 
 def gpio_p_get_state() -> int:
@@ -221,8 +222,8 @@ def gpio_p_get_state() -> int:
 
     __status_code, __value = rp.rp_GPIOpGetState()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_GPIOpGetState", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GPIOpGetState", (), __status_code)
 
     return __value
 
@@ -232,8 +233,8 @@ def enable_debug_reg() -> None:
 
     __status_code = rp.rp_EnableDebugReg()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_EnableDebugReg", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_EnableDebugReg", (), __status_code)
 
 
 def set_can_mode_enable(enable: bool) -> None:
@@ -249,8 +250,8 @@ def set_can_mode_enable(enable: bool) -> None:
 
     __status_code = rp.rp_SetCANModeEnable(enable)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_SetCANModeEnable", (enable,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_SetCANModeEnable", (enable,), __status_code)
 
 
 def get_can_mode_enable() -> bool:
@@ -264,8 +265,8 @@ def get_can_mode_enable() -> bool:
 
     __status_code, __value = rp.rp_GetCANModeEnable()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_GetCANModeEnable", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GetCANModeEnable", (), __status_code)
 
     return __value
 
@@ -277,8 +278,8 @@ def dpin_reset() -> None:
 
     __status_code = rp.rp_DpinReset()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_DpinReset", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_DpinReset", (), __status_code)
 
 
 def dpin_set_state(pin: constants.Pin, state: constants.PinState) -> None:
@@ -291,10 +292,10 @@ def dpin_set_state(pin: constants.Pin, state: constants.PinState) -> None:
          High/Low state that will be set at the given pin.
     """
 
-    __status_code = rp.rp_DpinSetState(pin, state)
+    __status_code = rp.rp_DpinSetState(pin.value, state.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_DpinSetState", (pin, state), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_DpinSetState", (pin, state), __status_code)
 
 
 def dpin_get_state(pin: constants.Pin) -> constants.PinState:
@@ -311,10 +312,10 @@ def dpin_get_state(pin: constants.Pin) -> constants.PinState:
          High/Low state that is set at the given pin.
     """
 
-    __status_code, __value = rp.rp_DpinGetState(pin)
+    __status_code, __value = rp.rp_DpinGetState(pin.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_DpinGetState", (pin,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_DpinGetState", (pin,), __status_code)
 
     return __value
 
@@ -333,10 +334,10 @@ def dpin_set_direction(pin: constants.Pin, direction: constants.PinDirection) ->
          In/Out direction that will be set at the given pin.
     """
 
-    __status_code = rp.rp_DpinSetDirection(pin, direction)
+    __status_code = rp.rp_DpinSetDirection(pin.value, direction.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_DpinSetDirection", (pin, direction), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_DpinSetDirection", (pin, direction), __status_code)
 
 
 def dpin_get_direction(pin: constants.Pin) -> constants.PinDirection:
@@ -353,10 +354,10 @@ def dpin_get_direction(pin: constants.Pin) -> constants.PinDirection:
          In/Out direction that is set at the given pin.
     """
 
-    __status_code, __value = rp.rp_DpinGetDirection(pin)
+    __status_code, __value = rp.rp_DpinGetDirection(pin.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_DpinGetDirection", (pin,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_DpinGetDirection", (pin,), __status_code)
 
     return __value
 
@@ -377,10 +378,8 @@ def set_enable_daisy_chain_trig_sync(enable: bool) -> None:
 
     __status_code = rp.rp_SetEnableDaisyChainTrigSync(enable)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
-            "rp_SetEnableDaisyChainTrigSync", (enable,), __status_code
-        )
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_SetEnableDaisyChainTrigSync", (enable,), __status_code)
 
 
 def get_enable_daisy_chain_trig_sync() -> bool:
@@ -394,8 +393,8 @@ def get_enable_daisy_chain_trig_sync() -> bool:
 
     __status_code, __value = rp.rp_GetEnableDaisyChainTrigSync()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_GetEnableDaisyChainTrigSync", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GetEnableDaisyChainTrigSync", (), __status_code)
 
     return __value
 
@@ -412,8 +411,8 @@ def set_dpin_enable_trig_output(enable: bool) -> None:
 
     __status_code = rp.rp_SetDpinEnableTrigOutput(enable)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_SetDpinEnableTrigOutput", (enable,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_SetDpinEnableTrigOutput", (enable,), __status_code)
 
 
 def get_dpin_enable_trig_output() -> bool:
@@ -428,8 +427,8 @@ def get_dpin_enable_trig_output() -> bool:
 
     __status_code, __value = rp.rp_GetDpinEnableTrigOutput()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_GetDpinEnableTrigOutput", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GetDpinEnableTrigOutput", (), __status_code)
 
     return __value
 
@@ -443,10 +442,10 @@ def set_source_trig_output(mode: constants.OutTriggerMode) -> None:
          Sets the mode.
     """
 
-    __status_code = rp.rp_SetSourceTrigOutput(mode)
+    __status_code = rp.rp_SetSourceTrigOutput(mode.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_SetSourceTrigOutput", (mode,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_SetSourceTrigOutput", (mode,), __status_code)
 
 
 def get_source_trig_output() -> constants.OutTriggerMode:
@@ -460,8 +459,8 @@ def get_source_trig_output() -> constants.OutTriggerMode:
 
     __status_code, __value = rp.rp_GetSourceTrigOutput()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_GetSourceTrigOutput", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GetSourceTrigOutput", (), __status_code)
 
     return __value
 
@@ -478,10 +477,8 @@ def set_enable_diasy_chain_clock_sync(enable: bool) -> None:
 
     __status_code = rp.rp_SetEnableDiasyChainClockSync(enable)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
-            "rp_SetEnableDiasyChainClockSync", (enable,), __status_code
-        )
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_SetEnableDiasyChainClockSync", (enable,), __status_code)
 
 
 def get_enable_diasy_chain_clock_sync() -> bool:
@@ -489,8 +486,8 @@ def get_enable_diasy_chain_clock_sync() -> bool:
 
     __status_code, __value = rp.rp_GetEnableDiasyChainClockSync()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_GetEnableDiasyChainClockSync", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GetEnableDiasyChainClockSync", (), __status_code)
 
     return __value
 
@@ -500,8 +497,8 @@ def apin_reset() -> None:
 
     __status_code = rp.rp_ApinReset()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_ApinReset", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_ApinReset", (), __status_code)
 
 
 def apin_get_value(
@@ -517,12 +514,10 @@ def apin_get_value(
            raw value
     """
 
-    __status_code, __value = rp.rp_ApinGetValue(pin, value, raw)
+    __status_code, __value = rp.rp_ApinGetValue(pin.value, value, raw)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
-            "rp_ApinGetValue", (pin, "<value>", "<raw>"), __status_code
-        )
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_ApinGetValue", (pin, "<value>", "<raw>"), __status_code)
 
     return __value
 
@@ -541,10 +536,10 @@ def apin_get_value_raw(pin: constants.AnalogPin) -> int:
          Raw value on analog pin
     """
 
-    __status_code, __value = rp.rp_ApinGetValueRaw(pin)
+    __status_code, __value = rp.rp_ApinGetValueRaw(pin.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_ApinGetValueRaw", (pin,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_ApinGetValueRaw", (pin,), __status_code)
 
     return __value
 
@@ -559,10 +554,10 @@ def apin_set_value(pin: constants.AnalogPin, value: float) -> None:
          Value in volts to be set on given output pin.
     """
 
-    __status_code = rp.rp_ApinSetValue(pin, value)
+    __status_code = rp.rp_ApinSetValue(pin.value, value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_ApinSetValue", (pin, value), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_ApinSetValue", (pin, value), __status_code)
 
 
 def apin_set_value_raw(pin: constants.AnalogPin, value: int) -> None:
@@ -575,10 +570,10 @@ def apin_set_value_raw(pin: constants.AnalogPin, value: int) -> None:
          Raw value to be set on given output pin.
     """
 
-    __status_code = rp.rp_ApinSetValueRaw(pin, value)
+    __status_code = rp.rp_ApinSetValueRaw(pin.value, value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_ApinSetValueRaw", (pin, value), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_ApinSetValueRaw", (pin, value), __status_code)
 
 
 def apin_get_range(
@@ -594,10 +589,10 @@ def apin_get_range(
          Maximum value in volts on given pin.
     """
 
-    __status_code, __value = rp.rp_ApinGetRange(pin, min_val, max_val)
+    __status_code, __value = rp.rp_ApinGetRange(pin.value, min_val, max_val)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_ApinGetRange", (pin, "<min_val>", "<max_val>"), __status_code
         )
 
@@ -617,10 +612,8 @@ def ai_pin_get_value(pin: int, value: float, raw: int) -> tuple[int, float, int]
 
     __status_code, __value = rp.rp_AIpinGetValue(pin, value, raw)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
-            "rp_AIpinGetValue", (pin, "<value>", "<raw>"), __status_code
-        )
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AIpinGetValue", (pin, "<value>", "<raw>"), __status_code)
 
     return __value
 
@@ -641,8 +634,8 @@ def ai_pin_get_value_raw(pin: int) -> int:
 
     __status_code, __value = rp.rp_AIpinGetValueRaw(pin)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AIpinGetValueRaw", (pin,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AIpinGetValueRaw", (pin,), __status_code)
 
     return __value
 
@@ -652,8 +645,8 @@ def ao_pin_reset() -> None:
 
     __status_code = rp.rp_AOpinReset()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AOpinReset", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AOpinReset", (), __status_code)
 
 
 def ao_pin_get_value(pin: int, value: float, raw: int) -> tuple[int, float, int]:
@@ -669,10 +662,8 @@ def ao_pin_get_value(pin: int, value: float, raw: int) -> tuple[int, float, int]
 
     __status_code, __value = rp.rp_AOpinGetValue(pin, value, raw)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
-            "rp_AOpinGetValue", (pin, "<value>", "<raw>"), __status_code
-        )
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AOpinGetValue", (pin, "<value>", "<raw>"), __status_code)
 
     return __value
 
@@ -693,8 +684,8 @@ def ao_pin_get_value_raw(pin: int) -> int:
 
     __status_code, __value = rp.rp_AOpinGetValueRaw(pin)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AOpinGetValueRaw", (pin,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AOpinGetValueRaw", (pin,), __status_code)
 
     return __value
 
@@ -711,8 +702,8 @@ def ao_pin_set_value(pin: int, value: float) -> None:
 
     __status_code = rp.rp_AOpinSetValue(pin, value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AOpinSetValue", (pin, value), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AOpinSetValue", (pin, value), __status_code)
 
 
 def ao_pin_set_value_raw(pin: int, value: int) -> None:
@@ -727,8 +718,8 @@ def ao_pin_set_value_raw(pin: int, value: int) -> None:
 
     __status_code = rp.rp_AOpinSetValueRaw(pin, value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AOpinSetValueRaw", (pin, value), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AOpinSetValueRaw", (pin, value), __status_code)
 
 
 def ao_pin_get_range(
@@ -746,8 +737,8 @@ def ao_pin_get_range(
 
     __status_code, __value = rp.rp_AOpinGetRange(pin, min_val, max_val)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_AOpinGetRange", (pin, "<min_val>", "<max_val>"), __status_code
         )
 
@@ -765,8 +756,8 @@ def get_pll_control_enable() -> bool:
 
     __status_code, __value = rp.rp_GetPllControlEnable()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_GetPllControlEnable", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GetPllControlEnable", (), __status_code)
 
     return __value
 
@@ -782,8 +773,8 @@ def set_pll_control_enable(enable: bool) -> None:
 
     __status_code = rp.rp_SetPllControlEnable(enable)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_SetPllControlEnable", (enable,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_SetPllControlEnable", (enable,), __status_code)
 
 
 def get_pll_control_locked() -> bool:
@@ -797,7 +788,7 @@ def get_pll_control_locked() -> bool:
 
     __status_code, __value = rp.rp_GetPllControlLocked()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_GetPllControlLocked", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GetPllControlLocked", (), __status_code)
 
     return __value

@@ -17,6 +17,7 @@ import rp
 
 from . import constants
 from .constants import StatusCode
+from .error import RPPError
 
 
 def get_buffer_fill_state(channel: constants.Channel) -> bool:
@@ -33,12 +34,10 @@ def get_buffer_fill_state(channel: constants.Channel) -> bool:
         Returns status
     """
 
-    __status_code, __value = rp.rp_AcqAxiGetBufferFillState(channel)
+    __status_code, __value = rp.rp_AcqAxiGetBufferFillState(channel.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
-            "rp_AcqAxiGetBufferFillState", (channel,), __status_code
-        )
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqAxiGetBufferFillState", (channel,), __status_code)
 
     return __value
 
@@ -55,10 +54,8 @@ def set_decimation_factor(decimation: int) -> None:
 
     __status_code = rp.rp_AcqAxiSetDecimationFactor(decimation)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
-            "rp_AcqAxiSetDecimationFactor", (decimation,), __status_code
-        )
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqAxiSetDecimationFactor", (decimation,), __status_code)
 
 
 def get_decimation_factor() -> int:
@@ -72,8 +69,8 @@ def get_decimation_factor() -> int:
 
     __status_code, __value = rp.rp_AcqAxiGetDecimationFactor()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqAxiGetDecimationFactor", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqAxiGetDecimationFactor", (), __status_code)
 
     return __value
 
@@ -89,10 +86,10 @@ def set_trigger_delay(channel: constants.Channel, decimated_data_num: int) -> No
         buffer size.
     """
 
-    __status_code = rp.rp_AcqAxiSetTriggerDelay(channel, decimated_data_num)
+    __status_code = rp.rp_AcqAxiSetTriggerDelay(channel.value, decimated_data_num)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_AcqAxiSetTriggerDelay", (channel, decimated_data_num), __status_code
         )
 
@@ -112,10 +109,10 @@ def get_trigger_delay(channel: constants.Channel) -> int:
         buffer size.
     """
 
-    __status_code, __value = rp.rp_AcqAxiGetTriggerDelay(channel)
+    __status_code, __value = rp.rp_AcqAxiGetTriggerDelay(channel.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqAxiGetTriggerDelay", (channel,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqAxiGetTriggerDelay", (channel,), __status_code)
 
     return __value
 
@@ -134,10 +131,10 @@ def get_write_pointer(channel: constants.Channel) -> int:
         Write pointer position
     """
 
-    __status_code, __value = rp.rp_AcqAxiGetWritePointer(channel)
+    __status_code, __value = rp.rp_AcqAxiGetWritePointer(channel.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqAxiGetWritePointer", (channel,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqAxiGetWritePointer", (channel,), __status_code)
 
     return __value
 
@@ -157,12 +154,10 @@ def get_write_pointer_at_trig(channel: constants.Channel) -> int:
         Write pointer position
     """
 
-    __status_code, __value = rp.rp_AcqAxiGetWritePointerAtTrig(channel)
+    __status_code, __value = rp.rp_AcqAxiGetWritePointerAtTrig(channel.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
-            "rp_AcqAxiGetWritePointerAtTrig", (channel,), __status_code
-        )
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqAxiGetWritePointerAtTrig", (channel,), __status_code)
 
     return __value
 
@@ -179,8 +174,8 @@ def get_memory_region(_start: int, _size: int) -> tuple[int, int]:
 
     __status_code, __value = rp.rp_AcqAxiGetMemoryRegion(_start, _size)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_AcqAxiGetMemoryRegion", ("<_start>", "<_size>"), __status_code
         )
 
@@ -197,10 +192,10 @@ def enable(channel: constants.Channel, enable: bool) -> None:
         Enable state
     """
 
-    __status_code = rp.rp_AcqAxiEnable(channel, enable)
+    __status_code = rp.rp_AcqAxiEnable(channel.value, enable)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqAxiEnable", (channel, enable), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqAxiEnable", (channel, enable), __status_code)
 
 
 def get_data_raw(channel: constants.Channel, pos: int) -> npt.NDArray[np.int16]:
@@ -221,11 +216,11 @@ def get_data_raw(channel: constants.Channel, pos: int) -> npt.NDArray[np.int16]:
     buffer = rp.iBuffer(constants.ADC_BUFFER_SIZE)
 
     __status_code, __value = rp.rp_AcqAxiGetDataRaw(
-        channel, pos, constants.ADC_BUFFER_SIZE, buffer
+        channel.value, pos, constants.ADC_BUFFER_SIZE, buffer
     )
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_AcqAxiGetDataRaw",
             (channel, pos, constants.ADC_BUFFER_SIZE, buffer),
             __status_code,
@@ -252,11 +247,11 @@ def get_datav(channel: constants.Channel, pos: int) -> npt.NDArray[np.float32]:
     buffer = rp.fBuffer(constants.ADC_BUFFER_SIZE)
 
     __status_code, __value = rp.rp_AcqAxiGetDataV(
-        channel, pos, constants.ADC_BUFFER_SIZE, buffer
+        channel.value, pos, constants.ADC_BUFFER_SIZE, buffer
     )
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_AcqAxiGetDataV",
             (channel, pos, constants.ADC_BUFFER_SIZE, buffer),
             __status_code,
@@ -280,10 +275,10 @@ def set_buffer_samples(channel: constants.Channel, address: int, samples: int) -
         Size of the ADC buffer in samples.
     """
 
-    __status_code = rp.rp_AcqAxiSetBufferSamples(channel, address, samples)
+    __status_code = rp.rp_AcqAxiSetBufferSamples(channel.value, address, samples)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_AcqAxiSetBufferSamples", (channel, address, samples), __status_code
         )
 
@@ -300,9 +295,9 @@ def set_buffer_bytes(channel: constants.Channel, address: int, size: int) -> Non
         Size of the ADC buffer in samples.
     """
 
-    __status_code = rp.rp_AcqAxiSetBufferBytes(channel, address, size)
+    __status_code = rp.rp_AcqAxiSetBufferBytes(channel.value, address, size)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_AcqAxiSetBufferBytes", (channel, address, size), __status_code
         )

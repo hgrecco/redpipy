@@ -22,6 +22,7 @@ import rp
 
 from . import constants
 from .constants import StatusCode
+from .error import RPPError
 
 
 def set_arm_keep(enable: bool) -> None:
@@ -35,8 +36,8 @@ def set_arm_keep(enable: bool) -> None:
 
     __status_code = rp.rp_AcqSetArmKeep(enable)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqSetArmKeep", (enable,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqSetArmKeep", (enable,), __status_code)
 
 
 def get_arm_keep() -> bool:
@@ -50,8 +51,8 @@ def get_arm_keep() -> bool:
 
     __status_code, __value = rp.rp_AcqGetArmKeep()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetArmKeep", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetArmKeep", (), __status_code)
 
     return __value
 
@@ -69,8 +70,8 @@ def get_buffer_fill_state() -> bool:
 
     __status_code, __value = rp.rp_AcqGetBufferFillState()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetBufferFillState", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetBufferFillState", (), __status_code)
 
     return __value
 
@@ -86,10 +87,10 @@ def set_decimation(decimation: constants.Decimation) -> None:
         Specify one of pre-defined decimation values
     """
 
-    __status_code = rp.rp_AcqSetDecimation(decimation)
+    __status_code = rp.rp_AcqSetDecimation(decimation.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqSetDecimation", (decimation,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqSetDecimation", (decimation,), __status_code)
 
 
 def get_decimation() -> constants.Decimation:
@@ -106,8 +107,8 @@ def get_decimation() -> constants.Decimation:
 
     __status_code, __value = rp.rp_AcqGetDecimation()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetDecimation", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetDecimation", (), __status_code)
 
     return __value
 
@@ -125,10 +126,10 @@ def convert_factor_to_decimation(factor: int, decimation: constants.Decimation) 
         set.
     """
 
-    __status_code = rp.rp_AcqConvertFactorToDecimation(factor, decimation)
+    __status_code = rp.rp_AcqConvertFactorToDecimation(factor, decimation.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_AcqConvertFactorToDecimation", (factor, "<decimation>"), __status_code
         )
 
@@ -145,10 +146,8 @@ def set_decimation_factor(decimation: int) -> None:
 
     __status_code = rp.rp_AcqSetDecimationFactor(decimation)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
-            "rp_AcqSetDecimationFactor", (decimation,), __status_code
-        )
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqSetDecimationFactor", (decimation,), __status_code)
 
 
 def get_decimation_factor() -> int:
@@ -166,8 +165,8 @@ def get_decimation_factor() -> int:
 
     __status_code, __value = rp.rp_AcqGetDecimationFactor()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetDecimationFactor", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetDecimationFactor", (), __status_code)
 
     return __value
 
@@ -187,8 +186,8 @@ def get_sampling_rate_hz() -> float:
 
     __status_code, __value = rp.rp_AcqGetSamplingRateHz()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetSamplingRateHz", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetSamplingRateHz", (), __status_code)
 
     return __value
 
@@ -206,8 +205,8 @@ def set_averaging(enable: bool) -> None:
 
     __status_code = rp.rp_AcqSetAveraging(enable)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqSetAveraging", (enable,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqSetAveraging", (enable,), __status_code)
 
 
 def get_averaging() -> bool:
@@ -224,8 +223,8 @@ def get_averaging() -> bool:
 
     __status_code, __value = rp.rp_AcqGetAveraging()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetAveraging", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetAveraging", (), __status_code)
 
     return __value
 
@@ -242,10 +241,10 @@ def set_trigger_src(source: constants.AcqTriggerSource) -> None:
         Trigger source.
     """
 
-    __status_code = rp.rp_AcqSetTriggerSrc(source)
+    __status_code = rp.rp_AcqSetTriggerSrc(source.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqSetTriggerSrc", (source,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqSetTriggerSrc", (source,), __status_code)
 
 
 def get_trigger_src() -> constants.AcqTriggerSource:
@@ -262,8 +261,8 @@ def get_trigger_src() -> constants.AcqTriggerSource:
 
     __status_code, __value = rp.rp_AcqGetTriggerSrc()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetTriggerSrc", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetTriggerSrc", (), __status_code)
 
     return __value
 
@@ -281,8 +280,8 @@ def get_trigger_state() -> constants.AcqTriggerState:
 
     __status_code, __value = rp.rp_AcqGetTriggerState()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetTriggerState", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetTriggerState", (), __status_code)
 
     return __value
 
@@ -299,10 +298,8 @@ def set_trigger_delay(decimated_data_num: int) -> None:
 
     __status_code = rp.rp_AcqSetTriggerDelay(decimated_data_num)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
-            "rp_AcqSetTriggerDelay", (decimated_data_num,), __status_code
-        )
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqSetTriggerDelay", (decimated_data_num,), __status_code)
 
 
 def get_trigger_delay() -> int:
@@ -317,8 +314,8 @@ def get_trigger_delay() -> int:
 
     __status_code, __value = rp.rp_AcqGetTriggerDelay()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetTriggerDelay", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetTriggerDelay", (), __status_code)
 
     return __value
 
@@ -335,8 +332,8 @@ def set_trigger_delay_direct(decimated_data_num: int) -> None:
 
     __status_code = rp.rp_AcqSetTriggerDelayDirect(decimated_data_num)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_AcqSetTriggerDelayDirect", (decimated_data_num,), __status_code
         )
 
@@ -353,8 +350,8 @@ def get_trigger_delay_direct() -> int:
 
     __status_code, __value = rp.rp_AcqGetTriggerDelayDirect()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetTriggerDelayDirect", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetTriggerDelayDirect", (), __status_code)
 
     return __value
 
@@ -372,8 +369,8 @@ def set_trigger_delay_ns(time_ns: int) -> None:
 
     __status_code = rp.rp_AcqSetTriggerDelayNs(time_ns)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqSetTriggerDelayNs", (time_ns,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqSetTriggerDelayNs", (time_ns,), __status_code)
 
 
 def get_trigger_delay_ns() -> int:
@@ -388,8 +385,8 @@ def get_trigger_delay_ns() -> int:
 
     __status_code, __value = rp.rp_AcqGetTriggerDelayNs()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetTriggerDelayNs", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetTriggerDelayNs", (), __status_code)
 
     return __value
 
@@ -407,10 +404,8 @@ def set_trigger_delay_ns_direct(time_ns: int) -> None:
 
     __status_code = rp.rp_AcqSetTriggerDelayNsDirect(time_ns)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
-            "rp_AcqSetTriggerDelayNsDirect", (time_ns,), __status_code
-        )
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqSetTriggerDelayNsDirect", (time_ns,), __status_code)
 
 
 def get_trigger_delay_ns_direct() -> int:
@@ -425,8 +420,8 @@ def get_trigger_delay_ns_direct() -> int:
 
     __status_code, __value = rp.rp_AcqGetTriggerDelayNsDirect()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetTriggerDelayNsDirect", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetTriggerDelayNsDirect", (), __status_code)
 
     return __value
 
@@ -442,8 +437,8 @@ def get_pre_trigger_counter() -> int:
 
     __status_code, __value = rp.rp_AcqGetPreTriggerCounter()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetPreTriggerCounter", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetPreTriggerCounter", (), __status_code)
 
     return __value
 
@@ -458,12 +453,10 @@ def set_trigger_level(channel: constants.TriggerChannel, voltage: float) -> None
         Threshold value for the channel
     """
 
-    __status_code = rp.rp_AcqSetTriggerLevel(channel, voltage)
+    __status_code = rp.rp_AcqSetTriggerLevel(channel.value, voltage)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
-            "rp_AcqSetTriggerLevel", (channel, voltage), __status_code
-        )
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqSetTriggerLevel", (channel, voltage), __status_code)
 
 
 def get_trigger_level(channel: constants.TriggerChannel) -> float:
@@ -475,10 +468,10 @@ def get_trigger_level(channel: constants.TriggerChannel) -> float:
         Current threshold value for the channel
     """
 
-    __status_code, __value = rp.rp_AcqGetTriggerLevel(channel)
+    __status_code, __value = rp.rp_AcqGetTriggerLevel(channel.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetTriggerLevel", (channel,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetTriggerLevel", (channel,), __status_code)
 
     return __value
 
@@ -495,8 +488,8 @@ def set_trigger_hyst(voltage: float) -> None:
 
     __status_code = rp.rp_AcqSetTriggerHyst(voltage)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqSetTriggerHyst", (voltage,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqSetTriggerHyst", (voltage,), __status_code)
 
 
 def get_trigger_hyst() -> float:
@@ -510,8 +503,8 @@ def get_trigger_hyst() -> float:
 
     __status_code, __value = rp.rp_AcqGetTriggerHyst()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetTriggerHyst", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetTriggerHyst", (), __status_code)
 
     return __value
 
@@ -528,10 +521,10 @@ def set_gain(channel: constants.Channel, state: constants.PinState) -> None:
         High or Low state
     """
 
-    __status_code = rp.rp_AcqSetGain(channel, state)
+    __status_code = rp.rp_AcqSetGain(channel.value, state.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqSetGain", (channel, state), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqSetGain", (channel, state), __status_code)
 
 
 def get_gain(channel: constants.Channel) -> constants.PinState:
@@ -550,10 +543,10 @@ def get_gain(channel: constants.Channel) -> constants.PinState:
         Currently set High or Low state in the library.
     """
 
-    __status_code, __value = rp.rp_AcqGetGain(channel)
+    __status_code, __value = rp.rp_AcqGetGain(channel.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetGain", (channel,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetGain", (channel,), __status_code)
 
     return __value
 
@@ -574,10 +567,10 @@ def get_gainv(channel: constants.Channel) -> float:
         Currently set gain in the library. 1.0 or 20.0 Volts
     """
 
-    __status_code, __value = rp.rp_AcqGetGainV(channel)
+    __status_code, __value = rp.rp_AcqGetGainV(channel.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetGainV", (channel,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetGainV", (channel,), __status_code)
 
     return __value
 
@@ -593,8 +586,8 @@ def get_write_pointer() -> int:
 
     __status_code, __value = rp.rp_AcqGetWritePointer()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetWritePointer", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetWritePointer", (), __status_code)
 
     return __value
 
@@ -610,8 +603,8 @@ def get_write_pointer_at_trig() -> int:
 
     __status_code, __value = rp.rp_AcqGetWritePointerAtTrig()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetWritePointerAtTrig", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetWritePointerAtTrig", (), __status_code)
 
     return __value
 
@@ -623,8 +616,8 @@ def start() -> None:
 
     __status_code = rp.rp_AcqStart()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqStart", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqStart", (), __status_code)
 
 
 def stop() -> None:
@@ -632,8 +625,8 @@ def stop() -> None:
 
     __status_code = rp.rp_AcqStop()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqStop", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqStop", (), __status_code)
 
 
 def reset() -> None:
@@ -643,8 +636,8 @@ def reset() -> None:
 
     __status_code = rp.rp_AcqReset()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqReset", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqReset", (), __status_code)
 
 
 def reset_fpga() -> None:
@@ -652,8 +645,8 @@ def reset_fpga() -> None:
 
     __status_code = rp.rp_AcqResetFpga()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqResetFpga", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqResetFpga", (), __status_code)
 
 
 def unlock_trigger() -> None:
@@ -661,8 +654,8 @@ def unlock_trigger() -> None:
 
     __status_code = rp.rp_AcqUnlockTrigger()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqUnlockTrigger", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqUnlockTrigger", (), __status_code)
 
 
 def get_unlock_trigger() -> bool:
@@ -670,8 +663,8 @@ def get_unlock_trigger() -> bool:
 
     __status_code, __value = rp.rp_AcqGetUnlockTrigger()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetUnlockTrigger", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetUnlockTrigger", (), __status_code)
 
     return __value
 
@@ -711,11 +704,11 @@ def get_data_pos_raw(
     buffer = rp.iBuffer(constants.ADC_BUFFER_SIZE)
 
     __status_code, __value = rp.rp_AcqGetDataPosRaw(
-        channel, start_pos, end_pos, buffer, constants.ADC_BUFFER_SIZE
+        channel.value, start_pos, end_pos, buffer, constants.ADC_BUFFER_SIZE
     )
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_AcqGetDataPosRaw",
             (channel, start_pos, end_pos, buffer, constants.ADC_BUFFER_SIZE),
             __status_code,
@@ -744,11 +737,11 @@ def get_data_posv(
     buffer = rp.fBuffer(constants.ADC_BUFFER_SIZE)
 
     __status_code, __value = rp.rp_AcqGetDataPosV(
-        channel, start_pos, end_pos, buffer, constants.ADC_BUFFER_SIZE
+        channel.value, start_pos, end_pos, buffer, constants.ADC_BUFFER_SIZE
     )
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_AcqGetDataPosV",
             (channel, start_pos, end_pos, buffer, constants.ADC_BUFFER_SIZE),
             __status_code,
@@ -775,11 +768,11 @@ def get_data_raw(channel: constants.Channel, pos: int) -> npt.NDArray[np.int16]:
     buffer = rp.iBuffer(constants.ADC_BUFFER_SIZE)
 
     __status_code, __value = rp.rp_AcqGetDataRaw(
-        channel, pos, constants.ADC_BUFFER_SIZE, buffer
+        channel.value, pos, constants.ADC_BUFFER_SIZE, buffer
     )
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_AcqGetDataRaw",
             (channel, pos, constants.ADC_BUFFER_SIZE, buffer),
             __status_code,
@@ -808,11 +801,11 @@ def get_data_raw_with_calib(
     buffer = rp.iBuffer(constants.ADC_BUFFER_SIZE)
 
     __status_code, __value = rp.rp_AcqGetDataRawWithCalib(
-        channel, pos, constants.ADC_BUFFER_SIZE, buffer
+        channel.value, pos, constants.ADC_BUFFER_SIZE, buffer
     )
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_AcqGetDataRawWithCalib",
             (channel, pos, constants.ADC_BUFFER_SIZE, buffer),
             __status_code,
@@ -840,11 +833,11 @@ def get_oldest_data_raw(channel: constants.Channel) -> npt.NDArray[np.int16]:
     buffer = rp.iBuffer(constants.ADC_BUFFER_SIZE)
 
     __status_code, __value = rp.rp_AcqGetOldestDataRaw(
-        channel, constants.ADC_BUFFER_SIZE, buffer
+        channel.value, constants.ADC_BUFFER_SIZE, buffer
     )
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_AcqGetOldestDataRaw",
             (channel, constants.ADC_BUFFER_SIZE, buffer),
             __status_code,
@@ -870,11 +863,11 @@ def get_latest_data_raw(channel: constants.Channel) -> npt.NDArray[np.int16]:
     buffer = rp.iBuffer(constants.ADC_BUFFER_SIZE)
 
     __status_code, __value = rp.rp_AcqGetLatestDataRaw(
-        channel, constants.ADC_BUFFER_SIZE, buffer
+        channel.value, constants.ADC_BUFFER_SIZE, buffer
     )
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_AcqGetLatestDataRaw",
             (channel, constants.ADC_BUFFER_SIZE, buffer),
             __status_code,
@@ -901,11 +894,11 @@ def get_datav(channel: constants.Channel, pos: int) -> npt.NDArray[np.float32]:
     buffer = rp.fBuffer(constants.ADC_BUFFER_SIZE)
 
     __status_code, __value = rp.rp_AcqGetDataV(
-        channel, pos, constants.ADC_BUFFER_SIZE, buffer
+        channel.value, pos, constants.ADC_BUFFER_SIZE, buffer
     )
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_AcqGetDataV",
             (channel, pos, constants.ADC_BUFFER_SIZE, buffer),
             __status_code,
@@ -933,8 +926,8 @@ def get_data(pos: int) -> np.ndarray:
 
     __status_code, __value = rp.rp_AcqGetData(pos)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetData", (pos,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetData", (pos,), __status_code)
 
     return __value
 
@@ -958,11 +951,11 @@ def get_oldest_datav(channel: constants.Channel) -> npt.NDArray[np.float32]:
     buffer = rp.fBuffer(constants.ADC_BUFFER_SIZE)
 
     __status_code, __value = rp.rp_AcqGetOldestDataV(
-        channel, constants.ADC_BUFFER_SIZE, buffer
+        channel.value, constants.ADC_BUFFER_SIZE, buffer
     )
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_AcqGetOldestDataV",
             (channel, constants.ADC_BUFFER_SIZE, buffer),
             __status_code,
@@ -988,11 +981,11 @@ def get_latest_datav(channel: constants.Channel) -> npt.NDArray[np.float32]:
     buffer = rp.fBuffer(constants.ADC_BUFFER_SIZE)
 
     __status_code, __value = rp.rp_AcqGetLatestDataV(
-        channel, constants.ADC_BUFFER_SIZE, buffer
+        channel.value, constants.ADC_BUFFER_SIZE, buffer
     )
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_AcqGetLatestDataV",
             (channel, constants.ADC_BUFFER_SIZE, buffer),
             __status_code,
@@ -1012,8 +1005,8 @@ def get_buf_size() -> int:
 
     __status_code, __value = rp.rp_AcqGetBufSize()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetBufSize", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetBufSize", (), __status_code)
 
     return __value
 
@@ -1023,10 +1016,10 @@ def update_acq_filter(channel: constants.Channel) -> None:
     filter
     """
 
-    __status_code = rp.rp_AcqUpdateAcqFilter(channel)
+    __status_code = rp.rp_AcqUpdateAcqFilter(channel.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqUpdateAcqFilter", (channel,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqUpdateAcqFilter", (channel,), __status_code)
 
 
 def get_filter_calib_value(
@@ -1046,11 +1039,11 @@ def get_filter_calib_value(
     """
 
     __status_code, __value = rp.rp_AcqGetFilterCalibValue(
-        channel, coef_aa, coef_bb, coef_kk, coef_pp
+        channel.value, coef_aa, coef_bb, coef_kk, coef_pp
     )
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
             "rp_AcqGetFilterCalibValue",
             (channel, "<coef_aa>", "<coef_bb>", "<coef_kk>", "<coef_pp>"),
             __status_code,
@@ -1071,10 +1064,8 @@ def set_ext_trigger_debouncer_us(value: float) -> None:
 
     __status_code = rp.rp_AcqSetExtTriggerDebouncerUs(value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError(
-            "rp_AcqSetExtTriggerDebouncerUs", (value,), __status_code
-        )
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqSetExtTriggerDebouncerUs", (value,), __status_code)
 
 
 def get_ext_trigger_debouncer_us() -> float:
@@ -1088,8 +1079,8 @@ def get_ext_trigger_debouncer_us() -> float:
 
     __status_code, __value = rp.rp_AcqGetExtTriggerDebouncerUs()
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetExtTriggerDebouncerUs", (), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetExtTriggerDebouncerUs", (), __status_code)
 
     return __value
 
@@ -1105,10 +1096,10 @@ def set_ac_dc(channel: constants.Channel, mode: constants.AcqMode) -> None:
         Set current state.
     """
 
-    __status_code = rp.rp_AcqSetAC_DC(channel, mode)
+    __status_code = rp.rp_AcqSetAC_DC(channel.value, mode.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqSetAC_DC", (channel, mode), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqSetAC_DC", (channel, mode), __status_code)
 
 
 def get_ac_dc(channel: constants.Channel) -> constants.AcqMode:
@@ -1126,9 +1117,9 @@ def get_ac_dc(channel: constants.Channel) -> constants.AcqMode:
         Set current state.
     """
 
-    __status_code, __value = rp.rp_AcqGetAC_DC(channel)
+    __status_code, __value = rp.rp_AcqGetAC_DC(channel.value)
 
-    if __status_code != StatusCode.OK:
-        raise constants.RPPError("rp_AcqGetAC_DC", (channel,), __status_code)
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetAC_DC", (channel,), __status_code)
 
     return __value
