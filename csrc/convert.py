@@ -327,7 +327,13 @@ def parse_doc(doc: str | None) -> Doc:
 
     pending = list(reversed(doc.split("\n")))
     parameters: dict[str, str] = {}
+
+    if not pending:
+        return Doc(main.strip(), parameters, "")
+
     ret: str | None = None
+
+    line = ""
     while pending:
         line = pending.pop().strip()
         if line.startswith("@"):
