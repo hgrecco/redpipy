@@ -203,7 +203,7 @@ ENUMS = dict(
 
 def my_parse_file(path: pathlib.Path) -> ParsedData:
     content = path.read_text()
-    out = []
+    out: list[str] = []
     for line in content.split("\n"):
         if line.startswith("#ifdef"):
             continue
