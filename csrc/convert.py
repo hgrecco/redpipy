@@ -276,7 +276,7 @@ def {func_pyname}({as_def_parameters}) -> {pyout_type}:
 
     __status_code, __value = rp.{func_cname}({as_call_arguments})
 
-    if __status_code != StatusCode.OK:
+    if __status_code != StatusCode.OK.value:
         raise constants.RPPError(
             "{func_cname}",
             ({as_debug_call_arguments}),
@@ -307,7 +307,7 @@ def {func_pyname}({as_def_parameters}) -> {pyout_type}:
 
     __status_code = rp.{func_cname}({as_call_arguments})
 
-    if __status_code != StatusCode.OK:
+    if __status_code != StatusCode.OK.value:
         raise constants.RPPError(
             "{func_cname}",
             ({as_debug_call_arguments}),
