@@ -171,6 +171,7 @@ SOURCE_PATH = PATH / "sources"
 CONVERTED_PATH = PATH / "converted"
 
 shutil.copy(PATH / "constants.py", CONVERTED_PATH / "constants.py")
+shutil.copy(PATH / "error.py", CONVERTED_PATH / "error.py")
 
 commit_id = (SOURCE_PATH / "sha.txt").read_text().strip("\n")
 
@@ -277,7 +278,7 @@ def {func_pyname}({as_def_parameters}) -> {pyout_type}:
     __status_code, __value = rp.{func_cname}({as_call_arguments})
 
     if __status_code != StatusCode.OK.value:
-        raise constants.RPPError(
+        raise RPPError(
             "{func_cname}",
             ({as_debug_call_arguments}),
               __status_code
@@ -308,7 +309,7 @@ def {func_pyname}({as_def_parameters}) -> {pyout_type}:
     __status_code = rp.{func_cname}({as_call_arguments})
 
     if __status_code != StatusCode.OK.value:
-        raise constants.RPPError(
+        raise RPPError(
             "{func_cname}",
             ({as_debug_call_arguments}),
               __status_code
