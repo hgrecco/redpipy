@@ -232,10 +232,10 @@ def to_python_type(s: str) -> str:
         return "bool"
     elif s == "buffers_t":
         return "np.ndarray"
-    elif s.startswith("rp_"):
-        return "constants." + ENUMS.get(s, stringcase.pascalcase(s[3:].strip("_t")))
     elif s in ENUMS:
-        return ENUMS[s]
+        return "constants." + ENUMS[s]
+    elif s.startswith("rp_"):
+        return "constants." + stringcase.pascalcase(s[3:].strip("_t"))  # type: ignore
     raise ValueError(s)
 
 
