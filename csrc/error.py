@@ -11,6 +11,8 @@
 from dataclasses import dataclass
 from typing import Any
 
+import rp
+
 from .constants import StatusCode
 
 
@@ -81,7 +83,12 @@ class RPPError(Exception):
     status_code_value: int
 
     def __str__(self) -> str:
-        err_msg = get_status_message(self.status_code_value)
+        try:
+            err_msg: str = rp.get_error(self.status_code_value)
+        except Exception:
+            err_msg = (
+                get_status_message(self.status_code_value) + "\nRecoverd via redpipy"
+            )
 
         return (
             f"While calling {self.function} with arguments {self.arguments}: "
