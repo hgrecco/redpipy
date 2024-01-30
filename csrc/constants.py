@@ -175,23 +175,23 @@ class EqFilterCoefficient(enum.Enum):
 class Decimation(enum.Enum):
     """Type representing decimation used at acquiring signal."""
 
-    DEC_1 = rp.DEC_1  #  Decimation 1
-    DEC_2 = rp.DEC_2  #  Decimation 2
-    DEC_4 = rp.DEC_4  #  Decimation 4
-    DEC_8 = rp.DEC_8  #  Decimation 8
-    DEC_16 = rp.DEC_16  #  Decimation 16
-    DEC_32 = rp.DEC_32  #  Decimation 32
-    DEC_64 = rp.DEC_64  #  Decimation 64
-    DEC_128 = rp.DEC_128  #  Decimation 128
-    DEC_256 = rp.DEC_256  #  Decimation 256
-    DEC_512 = rp.DEC_512  #  Decimation 512
-    DEC_1024 = rp.DEC_1024  #  Decimation 1024
-    DEC_2048 = rp.DEC_2048  #  Decimation 2048
-    DEC_4096 = rp.DEC_4096  #  Decimation 4096
-    DEC_8192 = rp.DEC_8192  #  Decimation 8192
-    DEC_16384 = rp.DEC_16384  #  Decimation 16384
-    DEC_32768 = rp.DEC_32768  #  Decimation 32768
-    DEC_65536 = rp.DEC_65536  #  Decimation 65536
+    DEC_1 = rp.RP_DEC_1  #  Decimation 1
+    DEC_2 = rp.RP_DEC_2  #  Decimation 2
+    DEC_4 = rp.RP_DEC_4  #  Decimation 4
+    DEC_8 = rp.RP_DEC_8  #  Decimation 8
+    DEC_16 = rp.RP_DEC_16  #  Decimation 16
+    DEC_32 = rp.RP_DEC_32  #  Decimation 32
+    DEC_64 = rp.RP_DEC_64  #  Decimation 64
+    DEC_128 = rp.RP_DEC_128  #  Decimation 128
+    DEC_256 = rp.RP_DEC_256  #  Decimation 256
+    DEC_512 = rp.RP_DEC_512  #  Decimation 512
+    DEC_1024 = rp.RP_DEC_1024  #  Decimation 1024
+    DEC_2048 = rp.RP_DEC_2048  #  Decimation 2048
+    DEC_4096 = rp.RP_DEC_4096  #  Decimation 4096
+    DEC_8192 = rp.RP_DEC_8192  #  Decimation 8192
+    DEC_16384 = rp.RP_DEC_16384  #  Decimation 16384
+    DEC_32768 = rp.RP_DEC_32768  #  Decimation 32768
+    DEC_65536 = rp.RP_DEC_65536  #  Decimation 65536
 
 
 class AcqMode(enum.Enum):
