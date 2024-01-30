@@ -88,7 +88,14 @@ class Parameter:
             return f"{self.pyname}: {self.pytype} = {self.default_value}"
 
     def as_call_argument(self) -> str:
-        return self.pyname if self.call_value is MISSING else str(self.call_value)
+        if self.ctype in ENUMS:
+            return (
+                self.pyname + ".value"
+                if self.call_value is MISSING
+                else str(self.call_value)
+            )
+        else:
+            return self.pyname if self.call_value is MISSING else str(self.call_value)
 
     def as_debug_call_argument(self) -> str:
         if self.call_value is MISSING:
