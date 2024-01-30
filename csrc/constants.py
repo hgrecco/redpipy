@@ -1,6 +1,9 @@
+# type: ignore
 """
     redpipy.constants
     ~~~~~~~~~~~~~~~~~
+
+    We need to ignore types as we do not have typing for rp constants.
 
     original file: rp_enums.h and rp.h
     commit id: 1f7b7c35070dce637ac699d974d3648b45672f89
@@ -10,8 +13,6 @@
 """
 
 import enum
-from dataclasses import dataclass
-from typing import Any
 
 import rp
 
@@ -277,71 +278,3 @@ class StatusCode(enum.Enum):
     EFWB = rp.RP_EFWB
     EMNC = rp.RP_EMNC
     NOTS = rp.RP_NOTS
-
-
-def get_status_message(code: StatusCode) -> str:
-    if code == StatusCode.OK:
-        return "Success"
-    elif code == StatusCode.EOED:
-        return "Failed to Open EEPROM Device"
-    elif code == StatusCode.EOMD:
-        return "Failed to Open Memory Device"
-    elif code == StatusCode.ECMD:
-        return "Failed to Close Memory Device"
-    elif code == StatusCode.EMMD:
-        return "Failed to Map Memory Device"
-    elif code == StatusCode.EUMD:
-        return "Failed to Unmap Memory Device"
-    elif code == StatusCode.EOOR:
-        return "Value Out Of Range"
-    elif code == StatusCode.ELID:
-        return "LED Input Direction is not valid"
-    elif code == StatusCode.EMRO:
-        return "Modifying Read Only field"
-    elif code == StatusCode.EWIP:
-        return "Writing to Input Pin is not valid"
-    elif code == StatusCode.EPN:
-        return "Invalid Pin number"
-    elif code == StatusCode.UIA:
-        return "Uninitialized Input Argument"
-    elif code == StatusCode.FCA:
-        return "Failed to Find Calibration Parameters"
-    elif code == StatusCode.RCA:
-        return "Failed to Read Calibration Parameters"
-    elif code == StatusCode.BTS:
-        return "Buffer too small"
-    elif code == StatusCode.EIPV:
-        return "Invalid parameter value"
-    elif code == StatusCode.EUF:
-        return "Unsupported Feature"
-    elif code == StatusCode.ENN:
-        return "Data not normalized"
-    elif code == StatusCode.EFOB:
-        return "Failed to open bus"
-    elif code == StatusCode.EFCB:
-        return "Failed to close bus"
-    elif code == StatusCode.EABA:
-        return "Failed to acquire bus access"
-    elif code == StatusCode.EFRB:
-        return "Failed to read from the bus"
-    elif code == StatusCode.EFWB:
-        return "Failed to write to the bus"
-    elif code == StatusCode.EMNC:
-        return "Extension module not connected"
-    elif code == StatusCode.NOTS:
-        return "Command not supported"
-    else:
-        return "Unknown error {code}"
-
-
-@dataclass(frozen=True)
-class RPPError(Exception):
-    function: str
-    arguments: Any
-    status_code: StatusCode
-
-    def __str__(self) -> str:
-        return (
-            f"While calling {self.function} with arguments {self.arguments}: "
-            f"{get_status_message(self.status_code)} ({self.status_code.value}))"
-        )
