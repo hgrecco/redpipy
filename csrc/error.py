@@ -14,7 +14,12 @@ from typing import Any
 from .constants import StatusCode
 
 
-def get_status_message(code: StatusCode) -> str:
+def get_status_message(code: StatusCode | int) -> str:
+    try:
+        code = StatusCode(code)
+    except ValueError:
+        return "Unknown error {code}"
+
     if code == StatusCode.OK:
         return "Success"
     elif code == StatusCode.EOED:
@@ -73,10 +78,12 @@ def get_status_message(code: StatusCode) -> str:
 class RPPError(Exception):
     function: str
     arguments: Any
-    status_code: StatusCode
+    status_code_value: int
 
     def __str__(self) -> str:
+        err_msg = get_status_message(self.status_code_value)
+
         return (
             f"While calling {self.function} with arguments {self.arguments}: "
-            f"{get_status_message(self.status_code)} ({self.status_code}))"
+            f"{err_msg} ({self.status_code_value}))"
         )
