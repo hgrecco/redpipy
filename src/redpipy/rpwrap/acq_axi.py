@@ -20,26 +20,33 @@ from .constants import StatusCode
 from .error import RPPError
 
 
-def get_buffer_fill_state(channel: constants.Channel) -> bool:
+def _to_debug(values=tuple()):
+    VALID = (int, float, str, bool)
+    return tuple(value if isinstance(value, VALID) else type(value) for value in values)
+
+
+def get_buffer_fill_state(channel: constants.Channel, state: bool) -> bool:
     """Indicates whether the ADC AXI buffer was full of data.
 
     Parameters
     ----------
     channel
         Channel index
-
-    C Parameters
-    ------------
     state
         Returns status
+
     """
 
-    __status_code, __value = rp.rp_AcqAxiGetBufferFillState(channel.value)
+    __status_code, __state = rp.rp_AcqAxiGetBufferFillState(channel.value, state)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_AcqAxiGetBufferFillState", (channel,), __status_code)
+        raise RPPError(
+            "rp_AcqAxiGetBufferFillState",
+            _to_debug(channel.value, state),
+            __status_code,
+        )
 
-    return __value
+    return __state
 
 
 def set_decimation_factor(decimation: int) -> None:
@@ -50,29 +57,35 @@ def set_decimation_factor(decimation: int) -> None:
     ----------
     decimation
         Decimation values
+
     """
 
     __status_code = rp.rp_AcqAxiSetDecimationFactor(decimation)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_AcqAxiSetDecimationFactor", (decimation,), __status_code)
+        raise RPPError(
+            "rp_AcqAxiSetDecimationFactor", _to_debug(decimation), __status_code
+        )
+
+    return
 
 
 def get_decimation_factor() -> int:
     """Gets the decimation used at acquiring signal.
 
-    C Parameters
-    ------------
+    Parameters
+    ----------
     decimation
         Decimation values
+
     """
 
-    __status_code, __value = rp.rp_AcqAxiGetDecimationFactor()
+    __status_code, __decimation = rp.rp_AcqAxiGetDecimationFactor()
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_AcqAxiGetDecimationFactor", (), __status_code)
+        raise RPPError("rp_AcqAxiGetDecimationFactor", _to_debug(), __status_code)
 
-    return __value
+    return __decimation
 
 
 def set_trigger_delay(channel: constants.Channel, decimated_data_num: int) -> None:
@@ -81,65 +94,75 @@ def set_trigger_delay(channel: constants.Channel, decimated_data_num: int) -> No
     Parameters
     ----------
     channel
-        Channel indexdecimated_data_num
+        Channel index
+    decimated_data_num
         Number of decimated data. It must not be higher than the ADC
         buffer size.
+
     """
 
     __status_code = rp.rp_AcqAxiSetTriggerDelay(channel.value, decimated_data_num)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqAxiSetTriggerDelay", (channel, decimated_data_num), __status_code
+            "rp_AcqAxiSetTriggerDelay",
+            _to_debug(channel.value, decimated_data_num),
+            __status_code,
         )
 
+    return
 
-def get_trigger_delay(channel: constants.Channel) -> int:
+
+def get_trigger_delay(channel: constants.Channel, decimated_data_num: int) -> int:
     """Gets the number of decimated data after trigger written into memory.
 
     Parameters
     ----------
     channel
         Channel index
-
-    C Parameters
-    ------------
     decimated_data_num
         Number of decimated data. It must not be higher than the ADC
         buffer size.
+
     """
 
-    __status_code, __value = rp.rp_AcqAxiGetTriggerDelay(channel.value)
+    __status_code, __decimated_data_num = rp.rp_AcqAxiGetTriggerDelay(
+        channel.value, decimated_data_num
+    )
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_AcqAxiGetTriggerDelay", (channel,), __status_code)
+        raise RPPError(
+            "rp_AcqAxiGetTriggerDelay",
+            _to_debug(channel.value, decimated_data_num),
+            __status_code,
+        )
 
-    return __value
+    return __decimated_data_num
 
 
-def get_write_pointer(channel: constants.Channel) -> int:
+def get_write_pointer(channel: constants.Channel, pos: int) -> int:
     """Returns current position of AXI ADC write pointer.
 
     Parameters
     ----------
     channel
         Channel index
-
-    C Parameters
-    ------------
     pos
         Write pointer position
+
     """
 
-    __status_code, __value = rp.rp_AcqAxiGetWritePointer(channel.value)
+    __status_code, __pos = rp.rp_AcqAxiGetWritePointer(channel.value, pos)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_AcqAxiGetWritePointer", (channel,), __status_code)
+        raise RPPError(
+            "rp_AcqAxiGetWritePointer", _to_debug(channel.value, pos), __status_code
+        )
 
-    return __value
+    return __pos
 
 
-def get_write_pointer_at_trig(channel: constants.Channel) -> int:
+def get_write_pointer_at_trig(channel: constants.Channel, pos: int) -> int:
     """Returns position of AXI ADC write pointer at time when trigger
     arrived.
 
@@ -147,19 +170,21 @@ def get_write_pointer_at_trig(channel: constants.Channel) -> int:
     ----------
     channel
         Channel index
-
-    C Parameters
-    ------------
     pos
         Write pointer position
+
     """
 
-    __status_code, __value = rp.rp_AcqAxiGetWritePointerAtTrig(channel.value)
+    __status_code, __pos = rp.rp_AcqAxiGetWritePointerAtTrig(channel.value, pos)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_AcqAxiGetWritePointerAtTrig", (channel,), __status_code)
+        raise RPPError(
+            "rp_AcqAxiGetWritePointerAtTrig",
+            _to_debug(channel.value, pos),
+            __status_code,
+        )
 
-    return __value
+    return __pos
 
 
 def get_memory_region(_start: int, _size: int) -> tuple[int, int]:
@@ -168,18 +193,20 @@ def get_memory_region(_start: int, _size: int) -> tuple[int, int]:
     C Parameters
     ------------
     channel
-        Channel indexenable
+        Channel index
+    enable
         Enable state
+
     """
 
-    __status_code, __value = rp.rp_AcqAxiGetMemoryRegion(_start, _size)
+    __status_code, ___start, ___size = rp.rp_AcqAxiGetMemoryRegion(_start, _size)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqAxiGetMemoryRegion", ("<_start>", "<_size>"), __status_code
+            "rp_AcqAxiGetMemoryRegion", _to_debug(_start, _size), __status_code
         )
 
-    return __value
+    return ___start, ___size
 
 
 def enable(channel: constants.Channel, enable: bool) -> None:
@@ -188,76 +215,98 @@ def enable(channel: constants.Channel, enable: bool) -> None:
     Parameters
     ----------
     channel
-        Channel indexenable
+        Channel index
+    enable
         Enable state
+
     """
 
     __status_code = rp.rp_AcqAxiEnable(channel.value, enable)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_AcqAxiEnable", (channel, enable), __status_code)
+        raise RPPError(
+            "rp_AcqAxiEnable", _to_debug(channel.value, enable), __status_code
+        )
+
+    return
 
 
-def get_data_raw(channel: constants.Channel, pos: int) -> npt.NDArray[np.int16]:
+def get_data_raw(
+    channel: constants.Channel, pos: int, size: int = constants.ADC_BUFFER_SIZE
+) -> npt.NDArray[np.int16]:
     """Returns the AXI ADC buffer in raw units from specified position and
     desired size. Output buffer must be at least 'size' long.
 
     Parameters
     ----------
     channel
-        Channel A or B for which we want to retrieve the ADC buffer.pos
-        Starting position of the ADC buffer to retrieve.size
+        Channel A or B for which we want to retrieve the ADC buffer.
+    pos
+        Starting position of the ADC buffer to retrieve.
+    size
         Length of the ADC buffer to retrieve. Returns length of filled
-        buffer. In case of too small buffer, required size is returned.buffer
+        buffer. In case of too small buffer, required size is returned.
+    buffer
         The output buffer gets filled with the selected part of the ADC
         buffer.
+
     """
 
-    buffer = rp.iBuffer(constants.ADC_BUFFER_SIZE)
+    buffer = rp.iBuffer(size)
 
-    __status_code, __value = rp.rp_AcqAxiGetDataRaw(
-        channel.value, pos, constants.ADC_BUFFER_SIZE, buffer
+    __status_code, __size, __buffer = rp.rp_AcqAxiGetDataRaw(
+        channel.value, pos, size, buffer
     )
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
             "rp_AcqAxiGetDataRaw",
-            (channel, pos, constants.ADC_BUFFER_SIZE, buffer),
+            _to_debug(channel.value, pos, size, buffer),
             __status_code,
         )
 
-    return np.fromiter(buffer, dtype=np.int16, count=constants.ADC_BUFFER_SIZE)
+    __arr_buffer = np.fromiter(buffer, dtype=np.int16, count=__size)
+
+    return __arr_buffer
 
 
-def get_datav(channel: constants.Channel, pos: int) -> npt.NDArray[np.float32]:
+def get_datav(
+    channel: constants.Channel, pos: int, size: int = constants.ADC_BUFFER_SIZE
+) -> npt.NDArray[np.float32]:
     """Returns the AXI ADC buffer in Volt units from specified position and
     desired size. Output buffer must be at least 'size' long.
 
     Parameters
     ----------
     channel
-        Channel A or B for which we want to retrieve the ADC buffer.pos
-        Starting position of the ADC buffer to retrievesize
+        Channel A or B for which we want to retrieve the ADC buffer.
+    pos
+        Starting position of the ADC buffer to retrieve
+    size
         Length of the ADC buffer to retrieve. Returns length of filled
-        buffer. In case of too small buffer, required size is returned.buffer
+        buffer. In case of too small buffer, required size is returned.
+    buffer
         The output buffer gets filled with the selected part of the ADC
         buffer.
+
     """
 
-    buffer = rp.fBuffer(constants.ADC_BUFFER_SIZE)
+    buffer = rp.fBuffer(size)
 
-    __status_code, __value = rp.rp_AcqAxiGetDataV(
-        channel.value, pos, constants.ADC_BUFFER_SIZE, buffer
+    __status_code, __size, __buffer = rp.rp_AcqAxiGetDataV(
+        channel.value, pos, size, buffer
     )
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
             "rp_AcqAxiGetDataV",
-            (channel, pos, constants.ADC_BUFFER_SIZE, buffer),
+            _to_debug(channel.value, pos, size, buffer),
             __status_code,
         )
 
-    return np.fromiter(buffer, dtype=np.float32, count=constants.ADC_BUFFER_SIZE)
+    __arr_buffer = np.fromiter(buffer, dtype=np.float32, count=__size)
+
+    return __arr_buffer
 
 
 def set_buffer_samples(channel: constants.Channel, address: int, samples: int) -> None:
@@ -266,21 +315,28 @@ def set_buffer_samples(channel: constants.Channel, address: int, samples: int) -
     Parameters
     ----------
     channel
-        Channel A or B for which we want to set the ADC buffer size.address
+        Channel A or B for which we want to set the ADC buffer size.
+    address
         Address of the ADC buffer.
+
 
     C Parameters
     ------------
     size
         Size of the ADC buffer in samples.
+
     """
 
     __status_code = rp.rp_AcqAxiSetBufferSamples(channel.value, address, samples)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqAxiSetBufferSamples", (channel, address, samples), __status_code
+            "rp_AcqAxiSetBufferSamples",
+            _to_debug(channel.value, address, samples),
+            __status_code,
         )
+
+    return
 
 
 def set_buffer_bytes(channel: constants.Channel, address: int, size: int) -> None:
@@ -290,14 +346,21 @@ def set_buffer_bytes(channel: constants.Channel, address: int, size: int) -> Non
     Parameters
     ----------
     channel
-        Channel A or B for which we want to set the ADC buffer bytes.address
-        Address of the ADC buffer.size
+        Channel A or B for which we want to set the ADC buffer bytes.
+    address
+        Address of the ADC buffer.
+    size
         Size of the ADC buffer in samples.
+
     """
 
     __status_code = rp.rp_AcqAxiSetBufferBytes(channel.value, address, size)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqAxiSetBufferBytes", (channel, address, size), __status_code
+            "rp_AcqAxiSetBufferBytes",
+            _to_debug(channel.value, address, size),
+            __status_code,
         )
+
+    return
