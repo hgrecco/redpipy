@@ -127,8 +127,8 @@ class Osciloscope:
         return dict(
             decimation=acq.get_decimation_factor(),
             sampling_rate=sampling_rate,
-            trace_duration=sampling_rate * constants.ADC_BUFFER_SIZE,
-            trigger_delay=sampling_rate * trigger_delay,
+            trace_duration=constants.ADC_BUFFER_SIZE / sampling_rate,
+            trigger_delay=trigger_delay / sampling_rate,
             trigger_delay_samples=trigger_delay,
         )
 
@@ -157,7 +157,7 @@ class Osciloscope:
 
     def get_timevector(self) -> npt.NDArray[np.float32]:
         """Get timevector (in seconds)."""
-        return self.get_timevector_raw() * acq.get_sampling_rate_hz()
+        return self.get_timevector_raw() / acq.get_sampling_rate_hz()
 
     def get_data(self, raw: bool = False) -> pd.DataFrame:
         """Get data (time, and traces of enabled channels"""
@@ -238,7 +238,7 @@ class Osciloscope:
         trigger_delay = int(constants.ADC_BUFFER_SIZE * (-trigger_position + 1 / 2))
         acq.set_trigger_delay(trigger_delay)
 
-        trace_duration = acq.get_sampling_rate_hz() * constants.ADC_BUFFER_SIZE
+        trace_duration = constants.ADC_BUFFER_SIZE / acq.get_sampling_rate_hz()
 
         # TODO: is this really needed? Or is there a way to check if it has finished?
         self._wait_after_trigger = trigger_position * trace_duration
@@ -247,7 +247,7 @@ class Osciloscope:
 
     def wait_for_trigger(self):
         """Wait until the triggering condition has been met."""
-        trace_duration = acq.get_sampling_rate_hz() * constants.ADC_BUFFER_SIZE
+        trace_duration = constants.ADC_BUFFER_SIZE / acq.get_sampling_rate_hz()
         sleep_duration = trace_duration / 10
         while acq.get_trigger_state() == constants.AcqTriggerState.WAITING:
             time.sleep(sleep_duration)
