@@ -113,6 +113,7 @@ class Osciloscope:
         self.channel1 = Channel(1)
         self.channel2 = Channel(2)
         self.configure_trigger()
+        self._wait_after_trigger = 0
 
     def get_metadata(self) -> Generator[tuple[Any, Any], Any, None]:
         yield from self.device_metadata.items()
@@ -150,7 +151,7 @@ class Osciloscope:
     def get_timevector_raw(self) -> npt.NDArray[np.int64]:
         """Get timevector (in samples)."""
         return (
-            np.arange(constants.ADC_BUFFER_SIZE, dtype=np.int64)
+            np.arange(constants.ADC_BUFFER_SIZE, dtype=np.int64)  # type: ignore
             + acq.get_trigger_delay()
         )
 
@@ -237,18 +238,23 @@ class Osciloscope:
         trigger_delay = int(constants.ADC_BUFFER_SIZE * (-trigger_position + 1 / 2))
         acq.set_trigger_delay(trigger_delay)
 
-        return acq.get_sampling_rate_hz() * constants.ADC_BUFFER_SIZE
+        trace_duration = acq.get_sampling_rate_hz() * constants.ADC_BUFFER_SIZE
+
+        # TODO: is this really needed? Or is there a way to check if it has finished?
+        self._wait_after_trigger = trigger_position * trace_duration
+
+        return trace_duration
 
     def wait_for_trigger(self):
         """Wait until the triggering condition has been met."""
-        window_duration = acq.get_sampling_rate_hz() * constants.ADC_BUFFER_SIZE
-        sleep_duration = window_duration / 10
+        trace_duration = acq.get_sampling_rate_hz() * constants.ADC_BUFFER_SIZE
+        sleep_duration = trace_duration / 10
         while acq.get_trigger_state() == constants.AcqTriggerState.WAITING:
             time.sleep(sleep_duration)
 
         # TODO: Is this necessary or the trigger is satified also when trigger delay
         # is fullfiled?
-        time.sleep(window_duration)
+        time.sleep(self._wait_after_trigger)
 
     def arm_trigger(self, wait: bool = True) -> None:
         """Arm the trigger.
