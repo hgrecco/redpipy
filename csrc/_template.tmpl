@@ -20,4 +20,11 @@ import numpy as np
 import rp
 import numpy.typing as npt
 
+def _to_debug(values=tuple()):
+    VALID = (int, float, str, bool)
+    return tuple(
+        value if isinstance(value, VALID) else type(value)
+        for value in values
+    )
+
 {content}

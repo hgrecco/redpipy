@@ -47,7 +47,11 @@ def format_func_name(name: str, prefix: str) -> str:
     return s
 
 
-MISSING = object()
+class MissingType:
+    pass
+
+
+MISSING = MissingType()
 
 
 @dataclass
@@ -60,9 +64,32 @@ class Parameter:
     use_in_def: bool = True
     use_in_call: bool = True
 
+    @classmethod
+    def from_cxx_obj(cls, obj: Any) -> "Parameter":
+        return cls.from_cxx_name_and_type(obj.name, obj.type)
+
+    @classmethod
+    def from_cxx_name_and_type(cls, name: str, param_type: Any) -> "Parameter":
+        if isinstance(param_type, cxxtypes.Pointer):
+            return Parameter(
+                name,
+                True,
+                param_type.ptr_to.typename.segments[0].name,
+            )
+        else:
+            return Parameter(name, False, param_type.typename.segments[0].name)
+
     @property
     def pyname(self) -> str:
         return camel_to_snake_case(self.name)
+
+    @property
+    def cout_pyname(self) -> str:
+        return "__" + self.pyname
+
+    @property
+    def arr_pyname(self) -> str:
+        return "__arr_" + self.pyname
 
     @property
     def pytype(self) -> str:
@@ -86,6 +113,12 @@ class Parameter:
             return f"{self.pyname}: {self.pytype}"
         else:
             return f"{self.pyname}: {self.pytype} = {self.default_value}"
+
+    def as_def_return_var(self) -> str:
+        if self.ctype in ENUMS:
+            return "constants." + ENUMS[self.ctype] + f"({self.cout_pyname})"
+        else:
+            return self.cout_pyname
 
     def as_call_argument(self) -> str:
         if self.ctype in ENUMS:
@@ -123,6 +156,17 @@ class Parameters(list[Parameter]):
             return tmp[0] + ", "
         return ", ".join(tmp)
 
+    def pairs(self):
+        if len(self) == 0:
+            yield None, None
+            return
+        if len(self) == 1:
+            yield self[0], None
+            return
+        for ndx in range(len(self) - 1):
+            yield self[ndx], self[ndx + 1]
+        yield self[-1], None
+
 
 @dataclass(frozen=True)
 class Doc:
@@ -140,8 +184,9 @@ class Doc:
         for name, pdoc in self.parameters.items():
             if name in include:
                 py_doc += camel_to_snake_case(name) + "\n"
-                py_doc += textwrap.fill(
-                    pdoc, initial_indent=INDENT, subsequent_indent=INDENT
+                py_doc += (
+                    textwrap.fill(pdoc, initial_indent=INDENT, subsequent_indent=INDENT)
+                    + "\n"
                 )
                 use_pydoc = True
 
@@ -152,8 +197,9 @@ class Doc:
         for name, pdoc in self.parameters.items():
             if name not in include:
                 c_doc += camel_to_snake_case(name) + "\n"
-                c_doc += textwrap.fill(
-                    pdoc, initial_indent=INDENT, subsequent_indent=INDENT
+                c_doc += (
+                    textwrap.fill(pdoc, initial_indent=INDENT, subsequent_indent=INDENT)
+                    + "\n"
                 )
                 use_cdoc = True
 
@@ -250,72 +296,53 @@ def get_buffer_string(ctype: str, buffer_size: str | int) -> str:
     raise ValueError(ctype)
 
 
+def build_buffer_string(varname: str, ctype: str, buffer_size: str | int) -> str:
+    return varname + " = " + get_buffer_string(ctype, buffer_size)
+
+
 def buffer_to_numpy_array(
     numpy_type: str, buffer_name: str, buffer_size: str | int
 ) -> str:
     return f"np.fromiter({buffer_name}, dtype={numpy_type}, count={buffer_size})"
 
 
-GETTER_TEMPLATE_NO_ERROR_CODE = """
-def {func_pyname}({as_def_parameters}) -> {pyout_type}:
+def build_numpy_array(
+    varname: str, numpy_type: str, buffer_name: str, buffer_size: str | int
+) -> str:
+    return varname + " = " + buffer_to_numpy_array(numpy_type, buffer_name, buffer_size)
+
+
+WITHOUT_ERROR_CODE = """
+def {func_pyname}({def_parameters}) -> {def_return_type}:
 {doc}
 
 {pre}
 
-    __value = rp.{func_cname}({as_call_arguments})
+    {call_return_vars} = rp.{func_cname}({call_arguments})
 
 {post}
 
-
+    return {def_return_vars}
 """
 
-GETTER_TEMPLATE_WITH_ERROR_CODE = """
-def {func_pyname}({as_def_parameters}) -> {pyout_type}:
+WITH_ERROR_CODE = """
+def {func_pyname}({def_parameters}) -> {def_return_type}:
 {doc}
 
 {pre}
 
-    __status_code, __value = rp.{func_cname}({as_call_arguments})
+    {call_return_vars} = rp.{func_cname}({call_arguments})
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
             "{func_cname}",
-            ({as_debug_call_arguments}),
+            {debug_call_arguments},
               __status_code
               )
 
 {post}
-"""
 
-SETTER_TEMPLATE_NO_ERROR_CODE = """
-def {func_pyname}({as_def_parameters}) -> {pyout_type}:
-{doc}
-
-{pre}
-
-    rp.{func_cname}({as_call_arguments})
-
-{post}
-
-
-"""
-
-SETTER_TEMPLATE_WITH_ERROR_CODE = """
-def {func_pyname}({as_def_parameters}) -> {pyout_type}:
-{doc}
-
-{pre}
-
-    __status_code = rp.{func_cname}({as_call_arguments})
-
-    if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "{func_cname}",
-            ({as_debug_call_arguments}),
-              __status_code
-              )
-
-{post}
+    return {def_return_vars}
 """
 
 
@@ -355,9 +382,9 @@ def parse_doc(doc: str | None) -> Doc:
         base, rest = el.split(" ", 1)
         if base == "@param":
             name, doc = rest.split(" ", 1)
-            parameters[name] = doc
+            parameters[name.strip()] = doc.strip()
         elif base == "@return":
-            ret = rest
+            ret = rest.strip()
         else:
             raise Exception("Why here!")
 
@@ -376,13 +403,12 @@ def get_guess(
 
 def get_guess(parameters: list[Parameter]) -> tuple[str, tuple[Parameter, ...]]:
     for ndx in range(len(parameters) - 1):
-        if parameters[ndx].name == "size" and parameters[ndx + 1].name == "buffer":
-            return "*size_*buffer", (parameters[ndx], parameters[ndx + 1])
-        if (
-            parameters[ndx].name == "buffer"
-            and parameters[ndx + 1].name == "buffer_size"
-        ):
-            return "*size_*buffer", (parameters[ndx + 1], parameters[ndx])
+        pthis, pnext = parameters[ndx], parameters[ndx + 1]
+        if pthis.name == "size" and pnext.name == "buffer":
+            return "*size_*buffer", (pthis, pnext)
+        if pthis.name == "buffer" and pnext.name == "buffer_size":
+            return "*buffer_*buffer_size", (pthis, pnext)
+
     return "unknown", ()
 
 
@@ -406,7 +432,7 @@ for filename in ("acq", "acq_axi", "gen", "rp"):
 
     for func in my_parse_file(SOURCE_PATH / cfilename).namespace.functions:
         msg = ""
-        func_cname: str = func.name.segments[0].name
+        func_cname: str = func.name.segments[0].name  # type: ignore
 
         if func_cname in FUNCTIONS_TO_SKIP:
             log(f"- Skipping {func_cname}")
@@ -451,138 +477,146 @@ for filename in ("acq", "acq_axi", "gen", "rp"):
         elif not (is_getter or is_setter):
             is_call = True
 
-        parameters: Parameters = Parameters()
-
-        for func_param in func.parameters:
-            if isinstance(func_param.type, cxxtypes.Pointer):
-                param = Parameter(
-                    func_param.name,
-                    True,
-                    func_param.type.ptr_to.typename.segments[0].name,
-                )
-            else:
-                param = Parameter(
-                    func_param.name, False, func_param.type.typename.segments[0].name
-                )
-
-            parameters.append(param)
-
-            del param
-
-        pre_call = []
-        post_call = []
+        parameters = Parameters(map(Parameter.from_cxx_obj, func.parameters))
+        ret = Parameter.from_cxx_name_and_type("return", func.return_type)
 
         has_buffer = any(param.name == "buffer" for param in parameters)
         count_pointers = sum(param.is_pointer for param in parameters)
 
-        pyout_type = "None"
-        if is_getter:
-            if has_buffer:
-                if len(parameters) == 1:
-                    out = parameters.pop()
-                    pyout_type = to_python_type(out.ctype)
+        pre_call: list[str] = []
+        post_call: list[str] = []
+
+        #############################
+        # Call to rp c function
+        #############################
+        call_arguments: list[str] = []
+        # return arguments from c function
+        call_return_vars: list[str] = []
+
+        if cfunc_has_status_code:
+            call_return_vars.append("__status_code")
+
+        #############################
+        # Python Function Definition
+        #############################
+        def_parameters: list[str] = []
+        def_return_type: list[str] = []
+        def_return_vars: list[str] = []
+
+        codepath = ""
+
+        it = iter(parameters.pairs())
+        for p, pnext in it:
+            if p is None:
+                continue
+            if pnext and p.is_pointer and pnext.is_pointer:
+                if (p.name, pnext.name) == ("size", "buffer"):
+                    szpar, bufpar = p, pnext
                     pre_call = [
-                        out.name
-                        + " = "
-                        + get_buffer_string(out.ctype, "constants.ADC_BUFFER_SIZE")
+                        build_buffer_string(bufpar.pyname, bufpar.ctype, szpar.pyname)
                     ]
+                    szpar.default_value = "constants.ADC_BUFFER_SIZE"
+                    def_parameters.append(szpar.as_def_parameter())
+                    call_arguments.append(szpar.pyname)
+                    call_arguments.append(bufpar.pyname)
+                    call_return_vars.append(szpar.cout_pyname)
+                    call_return_vars.append(bufpar.cout_pyname)
                     post_call = [
-                        "return "
-                        + buffer_to_numpy_array(
-                            out.numpy_type, out.name, "constants.ADC_BUFFER_SIZE"
+                        build_numpy_array(
+                            bufpar.arr_pyname,
+                            bufpar.numpy_type,
+                            bufpar.pyname,
+                            szpar.cout_pyname,
                         )
                     ]
-                else:
-                    org, pars = get_guess(parameters)
-
-                    if org == "*size_*buffer":
-                        szpar, bufpar = pars
-                        pre_call = [
-                            bufpar.pyname
-                            + " = "
-                            + get_buffer_string(
-                                bufpar.ctype, "constants.ADC_BUFFER_SIZE"
-                            ),
-                        ]
-
-                        post_call = [
-                            "return "
-                            + buffer_to_numpy_array(
-                                bufpar.numpy_type,
-                                bufpar.name,
-                                "constants.ADC_BUFFER_SIZE",
-                            )
-                        ]
-
-                        szpar.use_in_def = False
-                        szpar.call_value = "constants.ADC_BUFFER_SIZE"
-                        bufpar.use_in_def = False
-                        bufpar.call_value = bufpar.pyname
-
-                        pyout_type = f"npt.NDArray[{bufpar.numpy_type}]"
-
-                    else:
-                        print("!!!", func_cname)
-
-            else:
-                if count_pointers == 1:
-                    for ndx, out in enumerate(parameters):
-                        if out.is_pointer:
-                            break
-                    parameters.pop(ndx)
-                    pyout_type = out.pytype
-                    post_call = ["return __value"]
-
-                elif count_pointers == 0:
-                    # This function does not return an error code
-                    # i.e. math functinos
-                    if isinstance(func.return_type, cxxtypes.Pointer):
-                        if func.return_type.ptr_to.typename.segments[0].name == "char":
-                            pyout_type = "str"
-                        else:
-                            raise ValueError("")
-                    else:
-                        pyout_type = to_python_type(
-                            func.return_type.typename.segments[0].name
+                    def_return_vars.append(bufpar.arr_pyname)
+                    def_return_type.append(f"npt.NDArray[{bufpar.numpy_type}]")
+                    next(it)  # consume pnext
+                    continue
+                elif (p.name, pnext.name) == ("buffer", "buffer_size"):
+                    bufpar, szpar = p, pnext
+                    pre_call = [
+                        build_buffer_string(bufpar.pyname, bufpar.ctype, szpar.pyname)
+                    ]
+                    szpar.default_value = "constants.ADC_BUFFER_SIZE"
+                    def_parameters.append(szpar.as_def_parameter())
+                    call_arguments.append(bufpar.pyname)
+                    call_arguments.append(szpar.pyname)
+                    call_return_vars.append(bufpar.cout_pyname)
+                    call_return_vars.append(szpar.cout_pyname)
+                    post_call = [
+                        build_numpy_array(
+                            bufpar.arr_pyname,
+                            bufpar.numpy_type,
+                            bufpar.pyname,
+                            szpar.cout_pyname,
                         )
-                    post_call = ["return __value"]
+                    ]
+                    def_return_vars.append(bufpar.arr_pyname)
+                    def_return_type.append(f"npt.NDArray[{bufpar.numpy_type}]")
+                    next(it)  # consume pnext
+                    continue
+
+            if p.is_pointer:
+                if len(parameters) == 1:
+                    # unique parameter, likely converted to output
+                    # call_arguments.append(p.as_call_argument())
+                    call_return_vars.append(p.cout_pyname)
+                    # def_parameters.append(p.as_def_parameter())
+                    def_return_vars.append(p.as_def_return_var())
+                    def_return_type.append(p.pytype)
                 else:
-                    # return all values
-                    pyout_type = "tuple[{}]".format(
-                        ", ".join((p.pytype for p in parameters))
-                    )
-                    post_call = ["return __value"]
+                    call_arguments.append(p.as_call_argument())
+                    call_return_vars.append(p.cout_pyname)
+                    def_parameters.append(p.as_def_parameter())
+                    def_return_vars.append(p.as_def_return_var())
+                    def_return_type.append(p.pytype)
+            else:
+                call_arguments.append(p.as_call_argument())
+                # call_return_vars.append(p.cout_pyname)
+                def_parameters.append(p.as_def_parameter())
+                # def_return_vars.append(p.as_def_return_var())
+                # def_return_type.append(p.pytype)
+
+        if ret.is_pointer:
+            if ret.ctype == "char":
+                call_return_vars.append("__value")
+                def_return_vars.append("__value")
+                def_return_type.append("str")
+            else:
+                raise ValueError(ret.ctype)
+        if not call_return_vars and not cfunc_has_status_code:
+            # likely a math call
+            call_return_vars.append("__value")
+            def_return_vars.append("__value")
+            def_return_type.append(ret.pytype)
 
         pre = INDENT + ("\n" + INDENT).join(pre_call)
         post = INDENT + ("\n" + INDENT).join(post_call)
+
+        if not def_return_type:
+            def_return_type = ["None"]
 
         kwargs = dict(
             func_pyname=func_pyname,
             func_cname=func_cname,
             doc=parse_doc(func.doxygen).as_docstring(parameters.names()),
-            as_def_parameters=parameters.as_def_parameters(),
-            as_call_arguments=parameters.as_call_arguments(),
-            as_debug_call_arguments=parameters.as_debug_call_arguments(),
-            pyout_type=pyout_type,
+            def_parameters=", ".join(map(str, def_parameters)),
+            def_return_type=", ".join(def_return_type)
+            if len(def_return_type) == 1
+            else ("tuple[%s]" % (", ".join(def_return_type))),
+            def_return_vars=", ".join(def_return_vars),
+            call_return_vars=", ".join(call_return_vars),
+            call_arguments=", ".join(call_arguments),
+            debug_call_arguments="_to_debug(%s)" % (", ".join(call_arguments)),
             pre=pre,
             post=post,
         )
 
-        if is_getter:
-            if cfunc_has_status_code:
-                o_print(GETTER_TEMPLATE_WITH_ERROR_CODE.format(**kwargs))
-            else:
-                o_print(GETTER_TEMPLATE_NO_ERROR_CODE.format(**kwargs))
-        elif is_setter:
-            if cfunc_has_status_code:
-                o_print(SETTER_TEMPLATE_WITH_ERROR_CODE.format(**kwargs))
-            else:
-                o_print(SETTER_TEMPLATE_NO_ERROR_CODE.format(**kwargs))
-        elif is_call:
-            if cfunc_has_status_code:
-                o_print(SETTER_TEMPLATE_WITH_ERROR_CODE.format(**kwargs))
-            else:
-                o_print(SETTER_TEMPLATE_NO_ERROR_CODE.format(**kwargs))
+        if cfunc_has_status_code:
+            o_print(WITH_ERROR_CODE.format(**kwargs))
+        else:
+            o_print(WITHOUT_ERROR_CODE.format(**kwargs))
 
     if skipped_functions:
         msg = "Skipped functions\n"
