@@ -558,8 +558,8 @@ for filename in ("acq", "acq_axi", "gen", "rp"):
                     continue
 
             if p.is_pointer:
-                if len(parameters) == 1:
-                    # unique parameter, likely converted to output
+                if count_pointers == 1:
+                    # unique pointer parameter, likely converted to output
                     # call_arguments.append(p.as_call_argument())
                     call_return_vars.append(p.cout_pyname)
                     # def_parameters.append(p.as_def_parameter())
