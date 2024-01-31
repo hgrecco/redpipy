@@ -341,7 +341,7 @@ def dpin_set_state(pin: constants.Pin, state: constants.PinState) -> None:
     return
 
 
-def dpin_get_state(pin: constants.Pin, state: constants.PinState) -> constants.PinState:
+def dpin_get_state(pin: constants.Pin) -> constants.PinState:
     """Gets digital input output pin state.
 
     Parameters
@@ -353,12 +353,10 @@ def dpin_get_state(pin: constants.Pin, state: constants.PinState) -> constants.P
 
     """
 
-    __status_code, __state = rp.rp_DpinGetState(pin.value, state.value)
+    __status_code, __state = rp.rp_DpinGetState(pin.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_DpinGetState", _to_debug(pin.value, state.value), __status_code
-        )
+        raise RPPError("rp_DpinGetState", _to_debug(pin.value), __status_code)
 
     return constants.PinState(__state)
 
@@ -389,9 +387,7 @@ def dpin_set_direction(pin: constants.Pin, direction: constants.PinDirection) ->
     return
 
 
-def dpin_get_direction(
-    pin: constants.Pin, direction: constants.PinDirection
-) -> constants.PinDirection:
+def dpin_get_direction(pin: constants.Pin) -> constants.PinDirection:
     """Gets digital input output pin direction.
 
     Parameters
@@ -403,12 +399,10 @@ def dpin_get_direction(
 
     """
 
-    __status_code, __direction = rp.rp_DpinGetDirection(pin.value, direction.value)
+    __status_code, __direction = rp.rp_DpinGetDirection(pin.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_DpinGetDirection", _to_debug(pin.value, direction.value), __status_code
-        )
+        raise RPPError("rp_DpinGetDirection", _to_debug(pin.value), __status_code)
 
     return constants.PinDirection(__direction)
 
@@ -599,7 +593,7 @@ def apin_get_value(
     return __value, __raw
 
 
-def apin_get_value_raw(pin: constants.AnalogPin, value: int) -> int:
+def apin_get_value_raw(pin: constants.AnalogPin) -> int:
     """Gets raw value from analog pin.
 
     Parameters
@@ -611,10 +605,10 @@ def apin_get_value_raw(pin: constants.AnalogPin, value: int) -> int:
 
     """
 
-    __status_code, __value = rp.rp_ApinGetValueRaw(pin.value, value)
+    __status_code, __value = rp.rp_ApinGetValueRaw(pin.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_ApinGetValueRaw", _to_debug(pin.value, value), __status_code)
+        raise RPPError("rp_ApinGetValueRaw", _to_debug(pin.value), __status_code)
 
     return __value
 
@@ -709,7 +703,7 @@ def ai_pin_get_value(pin: int, value: float, raw: int) -> tuple[float, int]:
     return __value, __raw
 
 
-def ai_pin_get_value_raw(pin: int, value: int) -> int:
+def ai_pin_get_value_raw(pin: int) -> int:
     """Gets raw value from analog pin.
 
     Parameters
@@ -721,10 +715,10 @@ def ai_pin_get_value_raw(pin: int, value: int) -> int:
 
     """
 
-    __status_code, __value = rp.rp_AIpinGetValueRaw(pin, value)
+    __status_code, __value = rp.rp_AIpinGetValueRaw(pin)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_AIpinGetValueRaw", _to_debug(pin, value), __status_code)
+        raise RPPError("rp_AIpinGetValueRaw", _to_debug(pin), __status_code)
 
     return __value
 
@@ -762,7 +756,7 @@ def ao_pin_get_value(pin: int, value: float, raw: int) -> tuple[float, int]:
     return __value, __raw
 
 
-def ao_pin_get_value_raw(pin: int, value: int) -> int:
+def ao_pin_get_value_raw(pin: int) -> int:
     """Gets raw value from analog pin.
 
     Parameters
@@ -774,10 +768,10 @@ def ao_pin_get_value_raw(pin: int, value: int) -> int:
 
     """
 
-    __status_code, __value = rp.rp_AOpinGetValueRaw(pin, value)
+    __status_code, __value = rp.rp_AOpinGetValueRaw(pin)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_AOpinGetValueRaw", _to_debug(pin, value), __status_code)
+        raise RPPError("rp_AOpinGetValueRaw", _to_debug(pin), __status_code)
 
     return __value
 

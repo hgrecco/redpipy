@@ -81,7 +81,7 @@ def out_disable(channel: constants.Channel) -> None:
     return
 
 
-def out_is_enabled(channel: constants.Channel, value: bool) -> bool:
+def out_is_enabled(channel: constants.Channel) -> bool:
     """Gets value true if channel is enabled otherwise return false.
 
     Parameters
@@ -93,12 +93,10 @@ def out_is_enabled(channel: constants.Channel, value: bool) -> bool:
 
     """
 
-    __status_code, __value = rp.rp_GenOutIsEnabled(channel.value, value)
+    __status_code, __value = rp.rp_GenOutIsEnabled(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_GenOutIsEnabled", _to_debug(channel.value, value), __status_code
-        )
+        raise RPPError("rp_GenOutIsEnabled", _to_debug(channel.value), __status_code)
 
     return __value
 
@@ -124,7 +122,7 @@ def amp(channel: constants.Channel, amplitude: float) -> None:
     return
 
 
-def get_amp(channel: constants.Channel, amplitude: float) -> float:
+def get_amp(channel: constants.Channel) -> float:
     """Gets channel signal peak to peak amplitude.
 
     Parameters
@@ -136,12 +134,10 @@ def get_amp(channel: constants.Channel, amplitude: float) -> float:
 
     """
 
-    __status_code, __amplitude = rp.rp_GenGetAmp(channel.value, amplitude)
+    __status_code, __amplitude = rp.rp_GenGetAmp(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_GenGetAmp", _to_debug(channel.value, amplitude), __status_code
-        )
+        raise RPPError("rp_GenGetAmp", _to_debug(channel.value), __status_code)
 
     return __amplitude
 
@@ -166,7 +162,7 @@ def offset(channel: constants.Channel, offset: float) -> None:
     return
 
 
-def get_offset(channel: constants.Channel, offset: float) -> float:
+def get_offset(channel: constants.Channel) -> float:
     """Gets DC offset of the signal.
 
     Parameters
@@ -178,12 +174,10 @@ def get_offset(channel: constants.Channel, offset: float) -> float:
 
     """
 
-    __status_code, __offset = rp.rp_GenGetOffset(channel.value, offset)
+    __status_code, __offset = rp.rp_GenGetOffset(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_GenGetOffset", _to_debug(channel.value, offset), __status_code
-        )
+        raise RPPError("rp_GenGetOffset", _to_debug(channel.value), __status_code)
 
     return __offset
 
@@ -231,7 +225,7 @@ def freq_direct(channel: constants.Channel, frequency: float) -> None:
     return
 
 
-def get_freq(channel: constants.Channel, frequency: float) -> float:
+def get_freq(channel: constants.Channel) -> float:
     """Gets channel signal frequency.
 
     Parameters
@@ -243,12 +237,10 @@ def get_freq(channel: constants.Channel, frequency: float) -> float:
 
     """
 
-    __status_code, __frequency = rp.rp_GenGetFreq(channel.value, frequency)
+    __status_code, __frequency = rp.rp_GenGetFreq(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_GenGetFreq", _to_debug(channel.value, frequency), __status_code
-        )
+        raise RPPError("rp_GenGetFreq", _to_debug(channel.value), __status_code)
 
     return __frequency
 
@@ -275,7 +267,7 @@ def sweep_start_freq(channel: constants.Channel, frequency: float) -> None:
     return
 
 
-def get_sweep_start_freq(channel: constants.Channel, frequency: float) -> float:
+def get_sweep_start_freq(channel: constants.Channel) -> float:
     """Gets channel sweep signal start frequency.
 
     Parameters
@@ -287,13 +279,11 @@ def get_sweep_start_freq(channel: constants.Channel, frequency: float) -> float:
 
     """
 
-    __status_code, __frequency = rp.rp_GenGetSweepStartFreq(channel.value, frequency)
+    __status_code, __frequency = rp.rp_GenGetSweepStartFreq(channel.value)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_GenGetSweepStartFreq",
-            _to_debug(channel.value, frequency),
-            __status_code,
+            "rp_GenGetSweepStartFreq", _to_debug(channel.value), __status_code
         )
 
     return __frequency
@@ -321,7 +311,7 @@ def sweep_end_freq(channel: constants.Channel, frequency: float) -> None:
     return
 
 
-def get_sweep_end_freq(channel: constants.Channel, frequency: float) -> float:
+def get_sweep_end_freq(channel: constants.Channel) -> float:
     """Gets channel sweep signal end frequency.
 
     Parameters
@@ -333,12 +323,10 @@ def get_sweep_end_freq(channel: constants.Channel, frequency: float) -> float:
 
     """
 
-    __status_code, __frequency = rp.rp_GenGetSweepEndFreq(channel.value, frequency)
+    __status_code, __frequency = rp.rp_GenGetSweepEndFreq(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_GenGetSweepEndFreq", _to_debug(channel.value, frequency), __status_code
-        )
+        raise RPPError("rp_GenGetSweepEndFreq", _to_debug(channel.value), __status_code)
 
     return __frequency
 
@@ -363,7 +351,7 @@ def phase(channel: constants.Channel, phase: float) -> None:
     return
 
 
-def get_phase(channel: constants.Channel, phase: float) -> float:
+def get_phase(channel: constants.Channel) -> float:
     """Gets channel signal phase.
 
     Parameters
@@ -375,10 +363,10 @@ def get_phase(channel: constants.Channel, phase: float) -> float:
 
     """
 
-    __status_code, __phase = rp.rp_GenGetPhase(channel.value, phase)
+    __status_code, __phase = rp.rp_GenGetPhase(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_GenGetPhase", _to_debug(channel.value, phase), __status_code)
+        raise RPPError("rp_GenGetPhase", _to_debug(channel.value), __status_code)
 
     return __phase
 
@@ -410,9 +398,7 @@ def waveform(channel: constants.Channel, type: constants.Waveform) -> None:
     return
 
 
-def get_waveform(
-    channel: constants.Channel, type: constants.Waveform
-) -> constants.Waveform:
+def get_waveform(channel: constants.Channel) -> constants.Waveform:
     """Gets channel signal waveform.
 
     Parameters
@@ -424,12 +410,10 @@ def get_waveform(
 
     """
 
-    __status_code, __type = rp.rp_GenGetWaveform(channel.value, type.value)
+    __status_code, __type = rp.rp_GenGetWaveform(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_GenGetWaveform", _to_debug(channel.value, type.value), __status_code
-        )
+        raise RPPError("rp_GenGetWaveform", _to_debug(channel.value), __status_code)
 
     return constants.Waveform(__type)
 
@@ -457,9 +441,7 @@ def sweep_mode(channel: constants.Channel, mode: constants.GenSweepMode) -> None
     return
 
 
-def get_sweep_mode(
-    channel: constants.Channel, mode: constants.GenSweepMode
-) -> constants.GenSweepMode:
+def get_sweep_mode(channel: constants.Channel) -> constants.GenSweepMode:
     """Gets the generation mode for the sweep signal.
 
     Parameters
@@ -471,12 +453,10 @@ def get_sweep_mode(
 
     """
 
-    __status_code, __mode = rp.rp_GenGetSweepMode(channel.value, mode.value)
+    __status_code, __mode = rp.rp_GenGetSweepMode(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_GenGetSweepMode", _to_debug(channel.value, mode.value), __status_code
-        )
+        raise RPPError("rp_GenGetSweepMode", _to_debug(channel.value), __status_code)
 
     return constants.GenSweepMode(__mode)
 
@@ -504,9 +484,7 @@ def sweep_dir(channel: constants.Channel, mode: constants.GenSweepDirection) -> 
     return
 
 
-def get_sweep_dir(
-    channel: constants.Channel, mode: constants.GenSweepDirection
-) -> constants.GenSweepDirection:
+def get_sweep_dir(channel: constants.Channel) -> constants.GenSweepDirection:
     """Gets the direction of frequency change for sweep.
 
     Parameters
@@ -518,17 +496,15 @@ def get_sweep_dir(
 
     """
 
-    __status_code, __mode = rp.rp_GenGetSweepDir(channel.value, mode.value)
+    __status_code, __mode = rp.rp_GenGetSweepDir(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_GenGetSweepDir", _to_debug(channel.value, mode.value), __status_code
-        )
+        raise RPPError("rp_GenGetSweepDir", _to_debug(channel.value), __status_code)
 
     return constants.GenSweepDirection(__mode)
 
 
-def arb_waveform(channel: constants.Channel, waveform: float, length: int) -> float:
+def arb_waveform(channel: constants.Channel, length: int) -> float:
     """Sets user defined waveform.
 
     Parameters
@@ -542,13 +518,11 @@ def arb_waveform(channel: constants.Channel, waveform: float, length: int) -> fl
 
     """
 
-    __status_code, __waveform = rp.rp_GenArbWaveform(channel.value, waveform, length)
+    __status_code, __waveform = rp.rp_GenArbWaveform(channel.value, length)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_GenArbWaveform",
-            _to_debug(channel.value, waveform, length),
-            __status_code,
+            "rp_GenArbWaveform", _to_debug(channel.value, length), __status_code
         )
 
     return __waveform
@@ -607,7 +581,7 @@ def duty_cycle(channel: constants.Channel, ratio: float) -> None:
     return
 
 
-def get_duty_cycle(channel: constants.Channel, ratio: float) -> float:
+def get_duty_cycle(channel: constants.Channel) -> float:
     """Gets duty cycle of PWM signal.
 
     Parameters
@@ -619,12 +593,10 @@ def get_duty_cycle(channel: constants.Channel, ratio: float) -> float:
 
     """
 
-    __status_code, __ratio = rp.rp_GenGetDutyCycle(channel.value, ratio)
+    __status_code, __ratio = rp.rp_GenGetDutyCycle(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_GenGetDutyCycle", _to_debug(channel.value, ratio), __status_code
-        )
+        raise RPPError("rp_GenGetDutyCycle", _to_debug(channel.value), __status_code)
 
     return __ratio
 
@@ -640,15 +612,13 @@ def rise_time(channel: constants.Channel, time: float) -> None:
     return
 
 
-def get_rise_time(channel: constants.Channel, time: float) -> float:
+def get_rise_time(channel: constants.Channel) -> float:
     """ """
 
-    __status_code, __time = rp.rp_GenGetRiseTime(channel.value, time)
+    __status_code, __time = rp.rp_GenGetRiseTime(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_GenGetRiseTime", _to_debug(channel.value, time), __status_code
-        )
+        raise RPPError("rp_GenGetRiseTime", _to_debug(channel.value), __status_code)
 
     return __time
 
@@ -664,15 +634,13 @@ def fall_time(channel: constants.Channel, time: float) -> None:
     return
 
 
-def get_fall_time(channel: constants.Channel, time: float) -> float:
+def get_fall_time(channel: constants.Channel) -> float:
     """ """
 
-    __status_code, __time = rp.rp_GenGetFallTime(channel.value, time)
+    __status_code, __time = rp.rp_GenGetFallTime(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_GenGetFallTime", _to_debug(channel.value, time), __status_code
-        )
+        raise RPPError("rp_GenGetFallTime", _to_debug(channel.value), __status_code)
 
     return __time
 
@@ -699,7 +667,7 @@ def mode(channel: constants.Channel, mode: constants.GenMode) -> None:
     return
 
 
-def get_mode(channel: constants.Channel, mode: constants.GenMode) -> constants.GenMode:
+def get_mode(channel: constants.Channel) -> constants.GenMode:
     """Gets generation mode.
 
     Parameters
@@ -711,12 +679,10 @@ def get_mode(channel: constants.Channel, mode: constants.GenMode) -> constants.G
 
     """
 
-    __status_code, __mode = rp.rp_GenGetMode(channel.value, mode.value)
+    __status_code, __mode = rp.rp_GenGetMode(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_GenGetMode", _to_debug(channel.value, mode.value), __status_code
-        )
+        raise RPPError("rp_GenGetMode", _to_debug(channel.value), __status_code)
 
     return constants.GenMode(__mode)
 
@@ -743,7 +709,7 @@ def burst_count(channel: constants.Channel, num: int) -> None:
     return
 
 
-def get_burst_count(channel: constants.Channel, num: int) -> int:
+def get_burst_count(channel: constants.Channel) -> int:
     """Gets number of generated waveforms in a burst.
 
     Parameters
@@ -756,12 +722,10 @@ def get_burst_count(channel: constants.Channel, num: int) -> int:
 
     """
 
-    __status_code, __num = rp.rp_GenGetBurstCount(channel.value, num)
+    __status_code, __num = rp.rp_GenGetBurstCount(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_GenGetBurstCount", _to_debug(channel.value, num), __status_code
-        )
+        raise RPPError("rp_GenGetBurstCount", _to_debug(channel.value), __status_code)
 
     return __num
 
@@ -790,7 +754,7 @@ def burst_last_value(channel: constants.Channel, amplitude: float) -> None:
     return
 
 
-def get_burst_last_value(channel: constants.Channel, amplitude: float) -> float:
+def get_burst_last_value(channel: constants.Channel) -> float:
     """Gets the value to be set at the end of the generated signal in burst
     mode.
 
@@ -804,13 +768,11 @@ def get_burst_last_value(channel: constants.Channel, amplitude: float) -> float:
 
     """
 
-    __status_code, __amplitude = rp.rp_GenGetBurstLastValue(channel.value, amplitude)
+    __status_code, __amplitude = rp.rp_GenGetBurstLastValue(channel.value)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_GenGetBurstLastValue",
-            _to_debug(channel.value, amplitude),
-            __status_code,
+            "rp_GenGetBurstLastValue", _to_debug(channel.value), __status_code
         )
 
     return __amplitude
@@ -840,7 +802,7 @@ def set_init_gen_value(channel: constants.Channel, amplitude: float) -> None:
     return
 
 
-def get_init_gen_value(channel: constants.Channel, amplitude: float) -> float:
+def get_init_gen_value(channel: constants.Channel) -> float:
     """Gets the value of the initial signal level.
 
     Parameters
@@ -853,12 +815,10 @@ def get_init_gen_value(channel: constants.Channel, amplitude: float) -> float:
 
     """
 
-    __status_code, __amplitude = rp.rp_GenGetInitGenValue(channel.value, amplitude)
+    __status_code, __amplitude = rp.rp_GenGetInitGenValue(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_GenGetInitGenValue", _to_debug(channel.value, amplitude), __status_code
-        )
+        raise RPPError("rp_GenGetInitGenValue", _to_debug(channel.value), __status_code)
 
     return __amplitude
 
@@ -890,7 +850,7 @@ def burst_repetitions(channel: constants.Channel, repetitions: int) -> None:
     return
 
 
-def get_burst_repetitions(channel: constants.Channel, repetitions: int) -> int:
+def get_burst_repetitions(channel: constants.Channel) -> int:
     """Gets number of burst repetitions.
 
     Parameters
@@ -903,15 +863,11 @@ def get_burst_repetitions(channel: constants.Channel, repetitions: int) -> int:
 
     """
 
-    __status_code, __repetitions = rp.rp_GenGetBurstRepetitions(
-        channel.value, repetitions
-    )
+    __status_code, __repetitions = rp.rp_GenGetBurstRepetitions(channel.value)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_GenGetBurstRepetitions",
-            _to_debug(channel.value, repetitions),
-            __status_code,
+            "rp_GenGetBurstRepetitions", _to_debug(channel.value), __status_code
         )
 
     return __repetitions
@@ -941,7 +897,7 @@ def burst_period(channel: constants.Channel, period: int) -> None:
     return
 
 
-def get_burst_period(channel: constants.Channel, period: int) -> int:
+def get_burst_period(channel: constants.Channel) -> int:
     """Gets the period of one burst in micro seconds.
 
     Parameters
@@ -953,12 +909,10 @@ def get_burst_period(channel: constants.Channel, period: int) -> int:
 
     """
 
-    __status_code, __period = rp.rp_GenGetBurstPeriod(channel.value, period)
+    __status_code, __period = rp.rp_GenGetBurstPeriod(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_GenGetBurstPeriod", _to_debug(channel.value, period), __status_code
-        )
+        raise RPPError("rp_GenGetBurstPeriod", _to_debug(channel.value), __status_code)
 
     return __period
 
@@ -985,9 +939,7 @@ def trigger_source(channel: constants.Channel, src: constants.TriggerSource) -> 
     return
 
 
-def get_trigger_source(
-    channel: constants.Channel, src: constants.TriggerSource
-) -> constants.TriggerSource:
+def get_trigger_source(channel: constants.Channel) -> constants.TriggerSource:
     """Gets trigger source.
 
     Parameters
@@ -999,11 +951,11 @@ def get_trigger_source(
 
     """
 
-    __status_code, __src = rp.rp_GenGetTriggerSource(channel.value, src.value)
+    __status_code, __src = rp.rp_GenGetTriggerSource(channel.value)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_GenGetTriggerSource", _to_debug(channel.value, src.value), __status_code
+            "rp_GenGetTriggerSource", _to_debug(channel.value), __status_code
         )
 
     return constants.TriggerSource(__src)
@@ -1092,7 +1044,7 @@ def set_enable_temp_protection(channel: constants.Channel, enable: bool) -> None
     return
 
 
-def get_enable_temp_protection(channel: constants.Channel, enable: bool) -> bool:
+def get_enable_temp_protection(channel: constants.Channel) -> bool:
     """Get status of DAC protection mode from overheating. Only works with
     Redpitaya 250-12 otherwise returns RP_NOTS
 
@@ -1105,13 +1057,11 @@ def get_enable_temp_protection(channel: constants.Channel, enable: bool) -> bool
 
     """
 
-    __status_code, __enable = rp.rp_GetEnableTempProtection(channel.value, enable)
+    __status_code, __enable = rp.rp_GetEnableTempProtection(channel.value)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_GetEnableTempProtection",
-            _to_debug(channel.value, enable),
-            __status_code,
+            "rp_GetEnableTempProtection", _to_debug(channel.value), __status_code
         )
 
     return __enable
@@ -1140,7 +1090,7 @@ def set_latch_temp_alarm(channel: constants.Channel, status: bool) -> None:
     return
 
 
-def get_latch_temp_alarm(channel: constants.Channel, status: bool) -> bool:
+def get_latch_temp_alarm(channel: constants.Channel) -> bool:
     """Returns the status that there was an overheat. Only works with
     Redpitaya 250-12 otherwise returns RP_NOTS
 
@@ -1153,17 +1103,15 @@ def get_latch_temp_alarm(channel: constants.Channel, status: bool) -> bool:
 
     """
 
-    __status_code, __status = rp.rp_GetLatchTempAlarm(channel.value, status)
+    __status_code, __status = rp.rp_GetLatchTempAlarm(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_GetLatchTempAlarm", _to_debug(channel.value, status), __status_code
-        )
+        raise RPPError("rp_GetLatchTempAlarm", _to_debug(channel.value), __status_code)
 
     return __status
 
 
-def get_runtime_temp_alarm(channel: constants.Channel, status: bool) -> bool:
+def get_runtime_temp_alarm(channel: constants.Channel) -> bool:
     """Returns the current DAC overheat status in real time. Only works with
     Redpitaya 250-12 otherwise returns RP_NOTS
 
@@ -1176,11 +1124,11 @@ def get_runtime_temp_alarm(channel: constants.Channel, status: bool) -> bool:
 
     """
 
-    __status_code, __status = rp.rp_GetRuntimeTempAlarm(channel.value, status)
+    __status_code, __status = rp.rp_GetRuntimeTempAlarm(channel.value)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_GetRuntimeTempAlarm", _to_debug(channel.value, status), __status_code
+            "rp_GetRuntimeTempAlarm", _to_debug(channel.value), __status_code
         )
 
     return __status
@@ -1209,9 +1157,7 @@ def set_gain_out(channel: constants.Channel, mode: constants.GenGain) -> None:
     return
 
 
-def get_gain_out(
-    channel: constants.Channel, status: constants.GenGain
-) -> constants.GenGain:
+def get_gain_out(channel: constants.Channel) -> constants.GenGain:
     """Get the gain modes for output. Only works with Redpitaya 250-12
     otherwise returns RP_NOTS
 
@@ -1224,12 +1170,10 @@ def get_gain_out(
 
     """
 
-    __status_code, __status = rp.rp_GenGetGainOut(channel.value, status.value)
+    __status_code, __status = rp.rp_GenGetGainOut(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_GenGetGainOut", _to_debug(channel.value, status.value), __status_code
-        )
+        raise RPPError("rp_GenGetGainOut", _to_debug(channel.value), __status_code)
 
     return constants.GenGain(__status)
 

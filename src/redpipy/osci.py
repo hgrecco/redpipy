@@ -112,6 +112,7 @@ class Osciloscope:
         }
         self.channel1 = Channel(1)
         self.channel2 = Channel(2)
+        self.configure_trigger()
 
     def get_metadata(self) -> Generator[tuple[Any, Any], Any, None]:
         yield from self.device_metadata.items()
@@ -181,7 +182,7 @@ class Osciloscope:
 
         return df
 
-    def set_trigger(
+    def configure_trigger(
         self,
         *,
         source: Literal["ch1", "ch2", "ext"] = "ch1",
@@ -203,8 +204,9 @@ class Osciloscope:
         src = _TRIGGER_MAP[(source, positive_edge)]
         tch = _TRIGGER_CH_MAP[source]
 
-        acq.set_trigger_src(src)
-        acq.set_trigger_level(tch, level)
+        # Store this to be used when arming trigger.
+        self._trigger_src = src
+        self._trigger_level = (tch, level)
 
     def set_timebase(
         self, trace_duration_hint: float, trigger_position: float = 0
@@ -254,6 +256,9 @@ class Osciloscope:
         If wait is True (default), the thread will lock until the acquisition
         is complete.
         """
+        acq.set_trigger_src(self._trigger_src)
+        acq.set_trigger_level(*self._trigger_level)
+
         acq.reset()
         acq.start()
         if wait:
@@ -265,8 +270,6 @@ class Osciloscope:
         If wait is True (default), the thread will lock until the acquisition
         is complete.
         """
-        src = acq.get_trigger_src()
         acq.set_trigger_src(constants.AcqTriggerSource.NOW)
         if wait:
             self.wait_for_trigger()
-        acq.set_trigger_src(src)

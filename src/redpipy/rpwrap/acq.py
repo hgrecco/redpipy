@@ -129,9 +129,7 @@ def get_decimation() -> constants.Decimation:
     return constants.Decimation(__decimation)
 
 
-def convert_factor_to_decimation(
-    factor: int, decimation: constants.Decimation
-) -> constants.Decimation:
+def convert_factor_to_decimation(factor: int) -> constants.Decimation:
     """Convert factor to decimation used at acquiring signal. There is only a
     get of pre-defined decimation values which can be specified. See the
     #rp_acq_decimation_t enum values.
@@ -146,15 +144,11 @@ def convert_factor_to_decimation(
 
     """
 
-    __status_code, __decimation = rp.rp_AcqConvertFactorToDecimation(
-        factor, decimation.value
-    )
+    __status_code, __decimation = rp.rp_AcqConvertFactorToDecimation(factor)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqConvertFactorToDecimation",
-            _to_debug(factor, decimation.value),
-            __status_code,
+            "rp_AcqConvertFactorToDecimation", _to_debug(factor), __status_code
         )
 
     return constants.Decimation(__decimation)
@@ -527,7 +521,7 @@ def set_trigger_level(channel: constants.TriggerChannel, voltage: float) -> None
     return
 
 
-def get_trigger_level(channel: constants.TriggerChannel, voltage: float) -> float:
+def get_trigger_level(channel: constants.TriggerChannel) -> float:
     """Gets currently set trigger threshold value in volts
 
     Parameters
@@ -537,12 +531,10 @@ def get_trigger_level(channel: constants.TriggerChannel, voltage: float) -> floa
 
     """
 
-    __status_code, __voltage = rp.rp_AcqGetTriggerLevel(channel.value, voltage)
+    __status_code, __voltage = rp.rp_AcqGetTriggerLevel(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_AcqGetTriggerLevel", _to_debug(channel.value, voltage), __status_code
-        )
+        raise RPPError("rp_AcqGetTriggerLevel", _to_debug(channel.value), __status_code)
 
     return __voltage
 
@@ -608,9 +600,7 @@ def set_gain(channel: constants.Channel, state: constants.PinState) -> None:
     return
 
 
-def get_gain(
-    channel: constants.Channel, state: constants.PinState
-) -> constants.PinState:
+def get_gain(channel: constants.Channel) -> constants.PinState:
     """Returns the currently set acquire gain state in the library. It may
     not be set to the same value as it is set on the Red Pitaya hardware
     by the LV/HV gain jumpers. LV = 1V; HV = 20V.
@@ -624,17 +614,15 @@ def get_gain(
 
     """
 
-    __status_code, __state = rp.rp_AcqGetGain(channel.value, state.value)
+    __status_code, __state = rp.rp_AcqGetGain(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_AcqGetGain", _to_debug(channel.value, state.value), __status_code
-        )
+        raise RPPError("rp_AcqGetGain", _to_debug(channel.value), __status_code)
 
     return constants.PinState(__state)
 
 
-def get_gainv(channel: constants.Channel, voltage: float) -> float:
+def get_gainv(channel: constants.Channel) -> float:
     """Returns the currently set acquire gain in the library. It may not be
     set to the same value as it is set on the Red Pitaya hardware by the
     LV/HV gain jumpers. Returns value in Volts.
@@ -648,12 +636,10 @@ def get_gainv(channel: constants.Channel, voltage: float) -> float:
 
     """
 
-    __status_code, __voltage = rp.rp_AcqGetGainV(channel.value, voltage)
+    __status_code, __voltage = rp.rp_AcqGetGainV(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_AcqGetGainV", _to_debug(channel.value, voltage), __status_code
-        )
+        raise RPPError("rp_AcqGetGainV", _to_debug(channel.value), __status_code)
 
     return __voltage
 
@@ -1057,7 +1043,7 @@ def get_datav(
     return __arr_buffer
 
 
-def get_data(pos: int, out: np.ndarray) -> np.ndarray:
+def get_data(pos: int) -> np.ndarray:
     """Returns the ADC buffers from specified position and desired size.
     Output buffer must be at least 'size' long.
 
@@ -1077,10 +1063,10 @@ def get_data(pos: int, out: np.ndarray) -> np.ndarray:
 
     """
 
-    __status_code, __out = rp.rp_AcqGetData(pos, out)
+    __status_code, __out = rp.rp_AcqGetData(pos)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_AcqGetData", _to_debug(pos, out), __status_code)
+        raise RPPError("rp_AcqGetData", _to_debug(pos), __status_code)
 
     return __out
 
@@ -1293,9 +1279,7 @@ def set_ac_dc(channel: constants.Channel, mode: constants.AcqMode) -> None:
     return
 
 
-def get_ac_dc(
-    channel: constants.Channel, status: constants.AcqMode
-) -> constants.AcqMode:
+def get_ac_dc(channel: constants.Channel) -> constants.AcqMode:
     """Get the AC / DC modes for input. Only works with Redpitaya 250-12
     otherwise returns RP_NOTS
 
@@ -1308,11 +1292,9 @@ def get_ac_dc(
 
     """
 
-    __status_code, __status = rp.rp_AcqGetAC_DC(channel.value, status.value)
+    __status_code, __status = rp.rp_AcqGetAC_DC(channel.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_AcqGetAC_DC", _to_debug(channel.value, status.value), __status_code
-        )
+        raise RPPError("rp_AcqGetAC_DC", _to_debug(channel.value), __status_code)
 
     return constants.AcqMode(__status)

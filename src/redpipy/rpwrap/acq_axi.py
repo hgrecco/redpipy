@@ -25,7 +25,7 @@ def _to_debug(values=tuple()):
     return tuple(value if isinstance(value, VALID) else type(value) for value in values)
 
 
-def get_buffer_fill_state(channel: constants.Channel, state: bool) -> bool:
+def get_buffer_fill_state(channel: constants.Channel) -> bool:
     """Indicates whether the ADC AXI buffer was full of data.
 
     Parameters
@@ -37,13 +37,11 @@ def get_buffer_fill_state(channel: constants.Channel, state: bool) -> bool:
 
     """
 
-    __status_code, __state = rp.rp_AcqAxiGetBufferFillState(channel.value, state)
+    __status_code, __state = rp.rp_AcqAxiGetBufferFillState(channel.value)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqAxiGetBufferFillState",
-            _to_debug(channel.value, state),
-            __status_code,
+            "rp_AcqAxiGetBufferFillState", _to_debug(channel.value), __status_code
         )
 
     return __state
@@ -113,7 +111,7 @@ def set_trigger_delay(channel: constants.Channel, decimated_data_num: int) -> No
     return
 
 
-def get_trigger_delay(channel: constants.Channel, decimated_data_num: int) -> int:
+def get_trigger_delay(channel: constants.Channel) -> int:
     """Gets the number of decimated data after trigger written into memory.
 
     Parameters
@@ -126,21 +124,17 @@ def get_trigger_delay(channel: constants.Channel, decimated_data_num: int) -> in
 
     """
 
-    __status_code, __decimated_data_num = rp.rp_AcqAxiGetTriggerDelay(
-        channel.value, decimated_data_num
-    )
+    __status_code, __decimated_data_num = rp.rp_AcqAxiGetTriggerDelay(channel.value)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqAxiGetTriggerDelay",
-            _to_debug(channel.value, decimated_data_num),
-            __status_code,
+            "rp_AcqAxiGetTriggerDelay", _to_debug(channel.value), __status_code
         )
 
     return __decimated_data_num
 
 
-def get_write_pointer(channel: constants.Channel, pos: int) -> int:
+def get_write_pointer(channel: constants.Channel) -> int:
     """Returns current position of AXI ADC write pointer.
 
     Parameters
@@ -152,17 +146,17 @@ def get_write_pointer(channel: constants.Channel, pos: int) -> int:
 
     """
 
-    __status_code, __pos = rp.rp_AcqAxiGetWritePointer(channel.value, pos)
+    __status_code, __pos = rp.rp_AcqAxiGetWritePointer(channel.value)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqAxiGetWritePointer", _to_debug(channel.value, pos), __status_code
+            "rp_AcqAxiGetWritePointer", _to_debug(channel.value), __status_code
         )
 
     return __pos
 
 
-def get_write_pointer_at_trig(channel: constants.Channel, pos: int) -> int:
+def get_write_pointer_at_trig(channel: constants.Channel) -> int:
     """Returns position of AXI ADC write pointer at time when trigger
     arrived.
 
@@ -175,13 +169,11 @@ def get_write_pointer_at_trig(channel: constants.Channel, pos: int) -> int:
 
     """
 
-    __status_code, __pos = rp.rp_AcqAxiGetWritePointerAtTrig(channel.value, pos)
+    __status_code, __pos = rp.rp_AcqAxiGetWritePointerAtTrig(channel.value)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqAxiGetWritePointerAtTrig",
-            _to_debug(channel.value, pos),
-            __status_code,
+            "rp_AcqAxiGetWritePointerAtTrig", _to_debug(channel.value), __status_code
         )
 
     return __pos
