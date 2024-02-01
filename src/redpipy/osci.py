@@ -249,7 +249,7 @@ class Osciloscope:
         trace_duration = constants.ADC_BUFFER_SIZE / acq.get_sampling_rate_hz()
 
         # TODO: is this really needed? Or is there a way to check if it has finished?
-        self._wait_after_trigger = trigger_position * trace_duration
+        self._wait_after_trigger = trigger_position + trace_duration
 
         return trace_duration
 
