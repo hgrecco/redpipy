@@ -84,11 +84,13 @@ class Channel:
     # Is there a real way to enable/disable a channel?
     enabled: bool = False
 
-    def __init__(self, channel: Literal[1, 2]):
+    def __init__(self, channel: Literal[1, 2], gain: Literal[1, 20] = 1):
         if channel == 1:
             self.channel = constants.Channel.CH_1
         elif channel == 2:
             self.channel = constants.Channel.CH_2
+
+        self.set_gain(gain)
 
         self.enabled = False
 
@@ -99,6 +101,12 @@ class Channel:
     def get_trace_raw(self) -> npt.NDArray[np.int16]:
         """Get trace (in ADU)."""
         return acq.get_oldest_data_raw(self.channel)
+
+    def set_gain(self, gain: Literal[1, 20]):
+        if gain == 1:
+            acq.set_gain(self.channel, constants.PinState.HIGH)
+        elif gain == 5:
+            acq.set_gain(self.channel, constants.PinState.LOW)
 
 
 class Osciloscope:
