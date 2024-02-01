@@ -270,11 +270,9 @@ class Osciloscope:
         If wait is True (default), the thread will lock until the acquisition
         is complete.
         """
-        acq.set_trigger_src(self._trigger_src)
-        acq.set_trigger_level(*self._trigger_level)
-
-        acq.reset()
+        acq.reset_fpga()
         acq.start()
+        acq.set_trigger_src(self._trigger_src)
         if wait:
             self.wait_for_trigger()
 
