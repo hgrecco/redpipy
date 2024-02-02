@@ -222,6 +222,9 @@ class Osciloscope:
         self._trigger_src = src
         self._trigger_level = (tch, level)
 
+        acq.reset_fpga()
+        acq.set_trigger_level(*self._trigger_level)
+
     def set_timebase(
         self, trace_duration_hint: float, trigger_position: float = 0
     ) -> float:
