@@ -251,26 +251,27 @@ class Osciloscope:
         """
         acq.set_decimation(calculate_best_decimation(trace_duration_hint))
 
-        trigger_delay = int(constants.ADC_BUFFER_SIZE * (-trigger_position + 1 / 2))
+        # TODO: replace trace_duration_hint for the smallest time with the setted decimation
+        # that is greater than trace_duration_hint.
+        self._amount_datapoints = int(trace_duration_hint * acq.get_sampling_rate_hz()) + 1
+
+        trigger_delay = int(self._amount_datapoints * (-trigger_position) + constants.ADC_BUFFER_SIZE * 1 / 2)
         acq.set_trigger_delay(trigger_delay)
 
         trace_duration = constants.ADC_BUFFER_SIZE / acq.get_sampling_rate_hz()
-
-        # TODO: is this really needed? Or is there a way to check if it has finished?
-        self._wait_after_trigger = trigger_position + trace_duration
 
         return trace_duration
 
     def wait_for_trigger(self):
         """Wait until the triggering condition has been met."""
         trace_duration = constants.ADC_BUFFER_SIZE / acq.get_sampling_rate_hz()
-        sleep_duration = trace_duration / 10
+        sleep_duration = trace_duration / 1000
         while acq.get_trigger_state() == constants.AcqTriggerState.WAITING:
             time.sleep(sleep_duration)
 
-        # TODO: Is this necessary or the trigger is satified also when trigger delay
-        # is fullfiled?
-        time.sleep(self._wait_after_trigger)
+        while not acq.get_buffer_fill_state():
+            time.sleep(sleep_duration)
+
 
     def arm_trigger(self, wait: bool = True) -> None:
         """Arm the trigger.
