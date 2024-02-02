@@ -94,13 +94,13 @@ class Channel:
 
         self.enabled = False
 
-    def get_trace(self) -> npt.NDArray[np.float32]:
+    def get_trace(self, size: int = constants.ADC_BUFFER_SIZE) -> npt.NDArray[np.float32]:
         """Get trace (in volts)."""
-        return acq.get_latest_datav(self.channel)
+        return acq.get_oldest_datav(self.channel, size=size)
 
-    def get_trace_raw(self) -> npt.NDArray[np.int16]:
+    def get_trace_raw(self, size: int = constants.ADC_BUFFER_SIZE) -> npt.NDArray[np.int16]:
         """Get trace (in ADU)."""
-        return acq.get_oldest_data_raw(self.channel)
+        return acq.get_oldest_data_raw(self.channel, size=size)
 
     def set_gain(self, gain: Literal[1, 20]):
         if gain == 1:
