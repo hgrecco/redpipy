@@ -141,7 +141,13 @@ class Osciloscope:
         )
 
     def get_trigger_settings(self) -> dict[str, Any]:
-        """Get trigger settings."""
+        """Get trigger settings.
+
+        The trigger source and edge values are read from the Oscilloscope
+        class internal configuration. Instead, the trigger level value is
+        asked to the hardware.
+
+        """
         if self._trigger_src == constants.AcqTriggerSource.DISABLED:
             return dict(source="disabled", level=None, positive_edge=None)
         elif self._trigger_src == constants.AcqTriggerSource.NOW:
