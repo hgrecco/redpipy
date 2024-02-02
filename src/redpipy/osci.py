@@ -165,7 +165,7 @@ class Osciloscope:
         """Get timevector (in samples)."""
         return (
             np.arange(constants.ADC_BUFFER_SIZE, dtype=np.int64)  # type: ignore
-            + acq.get_trigger_delay()
+            + acq.get_trigger_delay() - constants.ADC_BUFFER_SIZE//2
         )
 
     def get_timevector(self) -> npt.NDArray[np.float32]:
