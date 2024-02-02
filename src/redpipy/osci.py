@@ -161,33 +161,33 @@ class Osciloscope:
             positive_edge=positive_edge,
         )
 
-    def get_timevector_raw(self) -> npt.NDArray[np.int64]:
+    def get_timevector_raw(self, size: int = constants.ADC_BUFFER_SIZE) -> npt.NDArray[np.int64]:
         """Get timevector (in samples)."""
         return (
-            np.arange(constants.ADC_BUFFER_SIZE, dtype=np.int64)  # type: ignore
+            np.arange(size, dtype=np.int64)  # type: ignore
             + acq.get_trigger_delay() - constants.ADC_BUFFER_SIZE//2
         )
 
-    def get_timevector(self) -> npt.NDArray[np.float32]:
+    def get_timevector(self, size: int = constants.ADC_BUFFER_SIZE) -> npt.NDArray[np.float32]:
         """Get timevector (in seconds)."""
-        return self.get_timevector_raw() / acq.get_sampling_rate_hz()
+        return self.get_timevector_raw(size=size) / acq.get_sampling_rate_hz()
 
     def get_data(self, raw: bool = False) -> pd.DataFrame:
         """Get data (time, and traces of enabled channels"""
         timestamp = datetime.now(tz=timezone.utc).isoformat()
 
         if raw:
-            out: dict[str, npt.NDArray[Any]] = dict(time=self.get_timevector_raw())
+            out: dict[str, npt.NDArray[Any]] = dict(time=self.get_timevector_raw(size=self._amount_datapoints))
             if self.channel1.enabled:
-                out["ch1"] = self.channel1.get_trace_raw()
+                out["ch1"] = self.channel1.get_trace_raw(size=self._amount_datapoints)
             if self.channel2.enabled:
-                out["ch2"] = self.channel1.get_trace_raw()
+                out["ch2"] = self.channel1.get_trace_raw(size=self._amount_datapoints)
         else:
-            out: dict[str, npt.NDArray[Any]] = dict(time=self.get_timevector())
+            out: dict[str, npt.NDArray[Any]] = dict(time=self.get_timevector(size=self._amount_datapoints))
             if self.channel1.enabled:
-                out["ch1"] = self.channel1.get_trace()
+                out["ch1"] = self.channel1.get_trace(size=self._amount_datapoints)
             if self.channel2.enabled:
-                out["ch2"] = self.channel1.get_trace()
+                out["ch2"] = self.channel1.get_trace(size=self._amount_datapoints)
 
         df = pd.DataFrame(out)
         df.attrs["timestamp"] = timestamp
