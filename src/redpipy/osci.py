@@ -142,13 +142,12 @@ class Osciloscope:
 
     def get_trigger_settings(self) -> dict[str, Any]:
         """Get trigger settings."""
-        trigger_src = acq.get_trigger_src()
-        if trigger_src == constants.AcqTriggerSource.DISABLED:
+        if self._trigger_src == constants.AcqTriggerSource.DISABLED:
             return dict(source="disabled", level=None, positive_edge=None)
-        elif trigger_src == constants.AcqTriggerSource.NOW:
+        elif self._trigger_src == constants.AcqTriggerSource.NOW:
             return dict(source="now", level=None, positive_edge=None)
 
-        source, positive_edge = _TRIGGER_MAP.inv[trigger_src]
+        source, positive_edge = _TRIGGER_MAP.inv[self._trigger_src]
         tch = _TRIGGER_CH_MAP[source]
         return dict(
             source=source,
