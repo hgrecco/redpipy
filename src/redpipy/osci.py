@@ -170,10 +170,12 @@ class Osciloscope:
 
     def get_timevector(self, size: int = constants.ADC_BUFFER_SIZE) -> npt.NDArray[np.float32]:
         """Get timevector (in seconds)."""
+        # TODO: update docs to take into account new parameter
         return self.get_timevector_raw(size=size) / acq.get_sampling_rate_hz()
 
     def get_data(self, raw: bool = False) -> pd.DataFrame:
         """Get data (time, and traces of enabled channels"""
+        # TODO: update docs to take into account new parameter
         timestamp = datetime.now(tz=timezone.utc).isoformat()
 
         if raw:
@@ -249,6 +251,8 @@ class Osciloscope:
         trigger_position, optional
             Position of the trigger as fraction of the buffer size, by default 0
         """
+        # TODO: change this docs to explain the trigger_position limits and how
+        # it works.
         acq.set_decimation(calculate_best_decimation(trace_duration_hint))
 
         # TODO: replace trace_duration_hint for the smallest time with the setted decimation
@@ -269,6 +273,7 @@ class Osciloscope:
         while acq.get_trigger_state() == constants.AcqTriggerState.WAITING:
             time.sleep(sleep_duration)
 
+        # TODO: move this to another function or change the name of thisone. 
         while not acq.get_buffer_fill_state():
             time.sleep(sleep_duration)
 
