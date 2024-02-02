@@ -109,8 +109,8 @@ class Channel:
             acq.set_gain(self.channel, constants.PinState.LOW)
 
 
-class Osciloscope:
-    """Osciloscope"""
+class Oscilloscope:
+    """Oscilloscope"""
 
     def __init__(self) -> None:
         self.device_metadata = {
