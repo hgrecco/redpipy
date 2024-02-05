@@ -51,6 +51,20 @@ def calculate_best_decimation(trace_duration: float) -> constants.Decimation:
         "Could not find suitable decimation value " "for {trace_duration} seconds."
     )
 
+def calculate_amount_datapoints(trace_duration: float) -> int:
+    """Calculate the least amount of datapoints that verifies
+    trace_duration <= amount_datapoints/sampling_rate.
+
+    Parameter
+    ---------
+    trace_duration
+        Duration of the trace in seconds
+    """
+    amount_datapoints = int(trace_duration * acq.get_sampling_rate_hz())
+    while amount_datapoints / acq.get_sampling_rate_hz() < trace_duration:
+        amount_datapoints += 1
+    return amount_datapoints
+
 
 _TRIGGER_MAP = common.TwoWayDict[
     tuple[Literal["ch1", "ch2", "ext"], bool], constants.AcqTriggerSource
@@ -259,7 +273,7 @@ class Oscilloscope:
 
         # TODO: replace trace_duration_hint for the smallest time with the setted decimation
         # that is greater than trace_duration_hint.
-        self._amount_datapoints = int(trace_duration_hint * acq.get_sampling_rate_hz()) + 1
+        self._amount_datapoints = calculate_amount_datapoints(trace_duration_hint)
 
         trigger_delay = int(self._amount_datapoints * (-trigger_position) + constants.ADC_BUFFER_SIZE * 1 / 2)
         acq.set_trigger_delay(trigger_delay)
