@@ -301,6 +301,7 @@ class Oscilloscope:
         units, optional
             Units in which the delay is specified, either "trace" or "second" by default trace.
         """
+        # TODO: fix trigger_delay <= 1trace problems.
 
         if units == "second":
             delay_samples = math.ceil(delay * acq.get_sampling_rate_hz())
