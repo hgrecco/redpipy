@@ -238,10 +238,14 @@ class Oscilloscope:
         duration, is returned.
 
         Trigger position
-        * 0: at the beginning of the buffer.
-        * 0.5: at the middle of the buffer.
-        * 1: at the end of the buffer.
-        * 2: at the end of the second measured buffer,
+        min: -1e5
+        max: 1
+        *  1: at the end of the measured buffer.
+        *  0.5: at the middle of the measured buffer.
+        *  0: at the beginning of the measured buffer.
+        * -0.5: at the middle of the first previously measured buffer.
+        * -1: at the beginning of the first previously measured buffer.
+        * -2: at the beginning of the second previously measured buffer.
         and so on.
 
         Parameters
@@ -251,8 +255,6 @@ class Oscilloscope:
         trigger_position, optional
             Position of the trigger as fraction of the buffer size, by default 0
         """
-        # TODO: change this docs to explain the trigger_position limits and how
-        # it works.
         acq.set_decimation(calculate_best_decimation(trace_duration_hint))
 
         # TODO: replace trace_duration_hint for the smallest time with the setted decimation
