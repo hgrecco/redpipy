@@ -9,6 +9,6 @@
     :license: BSD, see LICENSE for more details.
 """
 
-from .osci import Osciloscope
+from .osci import Oscilloscope
 
-__all__ = ["Osciloscope"]
+__all__ = ["Oscilloscope"]

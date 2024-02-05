@@ -77,7 +77,7 @@ _TRIGGER_CH_MAP = common.TwoWayDict[
 
 
 class Channel:
-    """Osciloscope channel."""
+    """Oscilloscope channel."""
 
     channel: constants.Channel
 
