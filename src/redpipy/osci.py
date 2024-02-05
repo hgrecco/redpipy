@@ -10,6 +10,7 @@
 """
 
 import time
+import math
 from datetime import datetime, timezone
 from typing import Any, Generator, Literal
 
@@ -51,18 +52,19 @@ def calculate_best_decimation(trace_duration: float) -> constants.Decimation:
         "Could not find suitable decimation value " "for {trace_duration} seconds."
     )
 
-def calculate_amount_datapoints(trace_duration: float) -> int:
+def calculate_amount_datapoints(min_trace_duration: float, sampling_rate: float) -> int:
     """Calculate the least amount of datapoints that verifies
     trace_duration <= amount_datapoints/sampling_rate.
 
     Parameter
     ---------
-    trace_duration
-        Duration of the trace in seconds
+    min_trace_duration
+        Duration of the minimum desired trace in seconds.
+    sampling_rate
+        RP's sampling rate.
     """
-    amount_datapoints = int(trace_duration * acq.get_sampling_rate_hz())
-    while amount_datapoints / acq.get_sampling_rate_hz() < trace_duration:
-        amount_datapoints += 1
+    amount_datapoints = math.ceil(min_trace_duration * sampling_rate)
+    assert 0 < amount_datapoints <= constants.ADC_BUFFER_SIZE
     return amount_datapoints
 
 
