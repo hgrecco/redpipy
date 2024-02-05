@@ -244,7 +244,7 @@ class Oscilloscope:
         acq.set_trigger_level(*self._trigger_level)
 
     def set_timebase(
-        self, trace_duration_hint: float, trigger_position: float = 0
+        self, trace_duration_hint: float, full_buffer: bool = False
     ) -> float:
         """Configure the timebase.
 
@@ -253,45 +253,71 @@ class Oscilloscope:
         one that can fit the provided trace duration hint. The actual trace
         duration, is returned.
 
-        Trigger position
-        min: -1e5
-        max: 1
-        *  1: at the end of the measured buffer.
-        *  0.5: at the middle of the measured buffer.
-        *  0: at the beginning of the measured buffer.
-        * -0.5: at the middle of the first previously measured buffer.
-        * -1: at the beginning of the first previously measured buffer.
-        * -2: at the beginning of the second previously measured buffer.
-        and so on.
-
         Parameters
         ----------
         trace_duration_hint
             Duration of the trace to be measured (in seconds).
-        trigger_position, optional
-            Position of the trigger as fraction of the buffer size, by default 0
+        full_buffer
+            The full RP buffer size is returned, by default False.
         """
         acq.set_decimation(calculate_best_decimation(trace_duration_hint))
 
-        # TODO: replace trace_duration_hint for the smallest time with the setted decimation
-        # that is greater than trace_duration_hint.
-        self._amount_datapoints = calculate_amount_datapoints(trace_duration_hint)
+        sampling_rate = acq.get_sampling_rate_hz()
+        if full_buffer:
+            self._amount_datapoints = constants.ADC_BUFFER_SIZE
+        else:
+            self._amount_datapoints = calculate_amount_datapoints(trace_duration_hint, sampling_rate)
 
-        trigger_delay = int(self._amount_datapoints * (-trigger_position) + constants.ADC_BUFFER_SIZE * 1 / 2)
-        acq.set_trigger_delay(trigger_delay)
-
-        trace_duration = constants.ADC_BUFFER_SIZE / acq.get_sampling_rate_hz()
+        trace_duration = self._amount_datapoints / sampling_rate
 
         return trace_duration
+    
+    def set_trigger_delay(self, delay: float, units: Literal["second", "trace"]="trace"):
+        """Set the trigger delay.
 
-    def wait_for_trigger(self):
+        The trigger delay is the amount of traces or seconds that are acquired
+        after the trigger.
+
+        For example, if the trace_duration is 1s:
+
+        trigger_delay (traces):
+        *  0: Trigger and stop acquiring.
+        *  1: Trigger and acquire one full trace.
+        *  1.5: Trigger, let half a trace pass and acquire a full trace.
+        *  2: Trigger, let one trace pass and acquire a full trace.
+        And so on.
+
+        trigger_delay (seconds):
+        *  0: Trigger and stop acquiring.
+        *  1: Trigger and acquire data for 1 second after stopping.
+        *  1.5: Trigger and acquire data for 1.5 seconds after stopping.
+        *  2: Trigger and acquire data for 2 seconds after stopping.
+        And so on.
+
+        Parameters
+        ----------
+        delay
+            Amount of traces (or seconds) during which data is acquired after triggering.
+        units, optional
+            Units in which the delay is specified, either "trace" or "second" by default trace.
+        """
+
+        if units == "second":
+            delay_samples = math.ceil(delay * acq.get_sampling_rate_hz())
+        elif units == "trace":
+            delay_samples = delay * self._amount_datapoints
+
+        trigger_delay = int(delay_samples + constants.ADC_BUFFER_SIZE * 1 / 2 - self._amount_datapoints)
+        acq.set_trigger_delay(trigger_delay)
+        return delay_samples
+
+    def wait_until_done(self):
         """Wait until the triggering condition has been met."""
-        trace_duration = constants.ADC_BUFFER_SIZE / acq.get_sampling_rate_hz()
-        sleep_duration = trace_duration / 1000
+        trace_duration = self._amount_datapoints / acq.get_sampling_rate_hz()
+        sleep_duration = max(trace_duration / 1000, 100e-6)
         while acq.get_trigger_state() == constants.AcqTriggerState.WAITING:
             time.sleep(sleep_duration)
 
-        # TODO: move this to another function or change the name of thisone. 
         while not acq.get_buffer_fill_state():
             time.sleep(sleep_duration)
 
@@ -306,7 +332,7 @@ class Oscilloscope:
         acq.start()
         acq.set_trigger_src(self._trigger_src)
         if wait:
-            self.wait_for_trigger()
+            self.wait_until_done()
 
     def trigger_now(self, wait: bool = True):
         """Trigger now.
@@ -316,4 +342,4 @@ class Oscilloscope:
         """
         acq.set_trigger_src(constants.AcqTriggerSource.NOW)
         if wait:
-            self.wait_for_trigger()
+            self.wait_until_done()
