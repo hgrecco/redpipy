@@ -507,7 +507,7 @@ def get_sweep_dir(channel: constants.Channel) -> constants.GenSweepDirection:
     return constants.GenSweepDirection(__mode)
 
 
-def arb_waveform(channel: constants.Channel, length: int) -> float:
+def arb_waveform(channel: constants.Channel, waveform: npt.NDArray[np.float32]) -> float:
     """Sets user defined waveform.
 
     Parameters
@@ -521,11 +521,15 @@ def arb_waveform(channel: constants.Channel, length: int) -> float:
 
     """
 
-    __status_code, __waveform = rp.rp_GenArbWaveform(channel.value, length)
+    waveform_buffer = rp.fBuffer(waveform.size)
+    for ndx in range(waveform.size):
+        waveform_buffer[ndx] = waveform[ndx]
+
+    __status_code, __waveform = rp.rp_GenArbWaveform(channel.value, waveform_buffer, waveform.size)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_GenArbWaveform", _to_debug(channel.value, length), __status_code
+            "rp_GenArbWaveform", _to_debug(channel.value, "waveform_buffer", waveform.size), __status_code
         )
 
     return __waveform
