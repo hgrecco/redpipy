@@ -19,7 +19,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from . import common
-from .rpwrap import acq, constants, rp
+from .rpwrap import acq, constants, rp, gen
 
 
 def get_maximum_sampling_rate() -> float:
@@ -78,6 +78,8 @@ _TRIGGER_MAP = common.TwoWayDict[
         ("ch2", False): constants.AcqTriggerSource.CHB_PE,
         ("ext", True): constants.AcqTriggerSource.EXT_PE,
         ("ext", False): constants.AcqTriggerSource.EXT_NE,
+        ("int", True): constants.AcqTriggerSource.AWG_PE,
+        ("int", False): constants.AcqTriggerSource.AWG_NE,
     }
 )
 
@@ -88,6 +90,7 @@ _TRIGGER_CH_MAP = common.TwoWayDict[
         "ch1": constants.TriggerChannel.CH_1,
         "ch2": constants.TriggerChannel.CH_2,
         "ext": constants.TriggerChannel.CH_EXT,
+        "int": constants.TriggerChannel.CH_1,
     }
 )
 
