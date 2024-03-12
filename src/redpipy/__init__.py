@@ -10,5 +10,6 @@
 """
 
 from .osci import Oscilloscope
+from .digital import RPDI, RPDO
 
-__all__ = ["Oscilloscope"]
+__all__ = ["Oscilloscope", "RPDI", "RPDO"]
