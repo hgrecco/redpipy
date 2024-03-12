@@ -77,6 +77,8 @@ class RPDO:
         ):
         for _ in range(amount):
             self.toggle()
+            # TODO: implement a better way to delay.
+            # sleep is too unstable at ~1 micro seconds.
             time.sleep(ontime)
             self.toggle()
             time.sleep(offtime)
