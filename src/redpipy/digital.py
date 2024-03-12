@@ -50,9 +50,8 @@ _STATE_MAP = common.TwoWayDict[
 class RPDO:
     def __init__(
             self,
-            *,
-            state: bool,
-            pin: tuple[Literal["n", "p"], int]
+            pin: tuple[Literal["n", "p"], int],
+            state: bool = True,
         ):
         self.pin = _PIN_MAP[pin]
         rp.dpin_set_direction(self.pin, constants.PinDirection.OUT)
@@ -72,7 +71,6 @@ class RPDO:
         self.set_state(not self.state)
 
     def pulse(self,
-            *,
             ontime: float,
             offtime: float,
             amount: int = 1
