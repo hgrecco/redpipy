@@ -140,6 +140,8 @@ class Oscilloscope:
         self.channel1 = Channel(1)
         self.channel2 = Channel(2)
         self.configure_trigger()
+        self.set_timebase(1)
+        self.set_trigger_delay(1)
         self._wait_after_trigger = 0
 
     def get_metadata(self) -> Generator[tuple[Any, Any], Any, None]:
