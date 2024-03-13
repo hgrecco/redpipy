@@ -344,6 +344,8 @@ class Oscilloscope:
         If wait is True (default), the thread will lock until the acquisition
         is complete.
         """
+        acq.reset_fpga()
+        acq.start()
         acq.set_trigger_src(constants.AcqTriggerSource.NOW)
         if wait:
             self.wait_until_done()
