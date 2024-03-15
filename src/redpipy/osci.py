@@ -8,9 +8,10 @@
     :copyright: 2024 by redpipy Authors, see AUTHORS for more details.
     :license: BSD, see LICENSE for more details.
 """
+from __future__ import annotations
 
-import time
 import math
+import time
 from datetime import datetime, timezone
 from typing import Any, Generator, Literal
 
@@ -19,7 +20,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from . import common
-from .rpwrap import acq, constants, rp, gen
+from .rpwrap import acq, constants, rp
 
 
 def get_maximum_sampling_rate() -> float:
@@ -51,6 +52,7 @@ def calculate_best_decimation(trace_duration: float) -> constants.Decimation:
     raise ValueError(
         "Could not find suitable decimation value " "for {trace_duration} seconds."
     )
+
 
 def calculate_amount_datapoints(min_trace_duration: float, sampling_rate: float) -> int:
     """Calculate the least amount of datapoints that verifies
@@ -113,11 +115,15 @@ class Channel:
 
         self.enabled = False
 
-    def get_trace(self, size: int = constants.ADC_BUFFER_SIZE) -> npt.NDArray[np.float32]:
+    def get_trace(
+        self, size: int = constants.ADC_BUFFER_SIZE
+    ) -> npt.NDArray[np.float32]:
         """Get trace (in volts)."""
         return acq.get_oldest_datav(self.channel, size=size)
 
-    def get_trace_raw(self, size: int = constants.ADC_BUFFER_SIZE) -> npt.NDArray[np.int16]:
+    def get_trace_raw(
+        self, size: int = constants.ADC_BUFFER_SIZE
+    ) -> npt.NDArray[np.int16]:
         """Get trace (in ADU)."""
         return acq.get_oldest_data_raw(self.channel, size=size)
 
@@ -182,14 +188,19 @@ class Oscilloscope:
             positive_edge=positive_edge,
         )
 
-    def get_timevector_raw(self, size: int = constants.ADC_BUFFER_SIZE) -> npt.NDArray[np.int64]:
+    def get_timevector_raw(
+        self, size: int = constants.ADC_BUFFER_SIZE
+    ) -> npt.NDArray[np.int64]:
         """Get timevector (in samples)."""
         return (
             np.arange(size, dtype=np.int64)  # type: ignore
-            + acq.get_trigger_delay() - constants.ADC_BUFFER_SIZE//2
+            + acq.get_trigger_delay()
+            - constants.ADC_BUFFER_SIZE // 2
         )
 
-    def get_timevector(self, size: int = constants.ADC_BUFFER_SIZE) -> npt.NDArray[np.float32]:
+    def get_timevector(
+        self, size: int = constants.ADC_BUFFER_SIZE
+    ) -> npt.NDArray[np.float32]:
         """Get timevector (in seconds)."""
         # TODO: update docs to take into account new parameter
         return self.get_timevector_raw(size=size) / acq.get_sampling_rate_hz()
@@ -200,13 +211,17 @@ class Oscilloscope:
         timestamp = datetime.now(tz=timezone.utc).isoformat()
 
         if raw:
-            out: dict[str, npt.NDArray[Any]] = dict(time=self.get_timevector_raw(size=self._amount_datapoints))
+            out: dict[str, npt.NDArray[Any]] = dict(
+                time=self.get_timevector_raw(size=self._amount_datapoints)
+            )
             if self.channel1.enabled:
                 out["ch1"] = self.channel1.get_trace_raw(size=self._amount_datapoints)
             if self.channel2.enabled:
                 out["ch2"] = self.channel1.get_trace_raw(size=self._amount_datapoints)
         else:
-            out: dict[str, npt.NDArray[Any]] = dict(time=self.get_timevector(size=self._amount_datapoints))
+            out: dict[str, npt.NDArray[Any]] = dict(
+                time=self.get_timevector(size=self._amount_datapoints)
+            )
             if self.channel1.enabled:
                 out["ch1"] = self.channel1.get_trace(size=self._amount_datapoints)
             if self.channel2.enabled:
@@ -271,13 +286,17 @@ class Oscilloscope:
         if full_buffer:
             self._amount_datapoints = constants.ADC_BUFFER_SIZE
         else:
-            self._amount_datapoints = calculate_amount_datapoints(trace_duration_hint, sampling_rate)
+            self._amount_datapoints = calculate_amount_datapoints(
+                trace_duration_hint, sampling_rate
+            )
 
         trace_duration = self._amount_datapoints / sampling_rate
 
         return trace_duration
-    
-    def set_trigger_delay(self, delay: float, units: Literal["second", "trace"]="trace"):
+
+    def set_trigger_delay(
+        self, delay: float, units: Literal["second", "trace"] = "trace"
+    ):
         """Set the trigger delay.
 
         The trigger delay is the amount of traces or seconds that are acquired
@@ -313,7 +332,9 @@ class Oscilloscope:
         elif units == "trace":
             delay_samples = delay * self._amount_datapoints
 
-        trigger_delay = int(delay_samples + constants.ADC_BUFFER_SIZE * 1 / 2 - self._amount_datapoints)
+        trigger_delay = int(
+            delay_samples + constants.ADC_BUFFER_SIZE * 1 / 2 - self._amount_datapoints
+        )
         acq.set_trigger_delay(trigger_delay)
         return delay_samples
 
@@ -326,7 +347,6 @@ class Oscilloscope:
 
         while not acq.get_buffer_fill_state():
             time.sleep(sleep_duration)
-
 
     def arm_trigger(self, wait: bool = True) -> None:
         """Arm the trigger.

@@ -10,10 +10,10 @@
     :copyright: 2024 by redpipy Authors, see AUTHORS for more details.
     :license: BSD, see LICENSE for more details.
 """
-
-import rp
+from __future__ import annotations
 
 import numpy as np
+import rp
 from numpy import typing as npt
 
 from . import constants
@@ -507,7 +507,9 @@ def get_sweep_dir(channel: constants.Channel) -> constants.GenSweepDirection:
     return constants.GenSweepDirection(__mode)
 
 
-def arb_waveform(channel: constants.Channel, waveform: npt.NDArray[np.float32]) -> float:
+def arb_waveform(
+    channel: constants.Channel, waveform: npt.NDArray[np.float32]
+) -> float:
     """Sets user defined waveform.
 
     Parameters
@@ -525,11 +527,15 @@ def arb_waveform(channel: constants.Channel, waveform: npt.NDArray[np.float32]) 
     for ndx in range(waveform.size):
         waveform_buffer[ndx] = waveform[ndx]
 
-    __status_code, __waveform = rp.rp_GenArbWaveform(channel.value, waveform_buffer, waveform.size)
+    __status_code, __waveform = rp.rp_GenArbWaveform(
+        channel.value, waveform_buffer, waveform.size
+    )
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_GenArbWaveform", _to_debug(channel.value, "waveform_buffer", waveform.size), __status_code
+            "rp_GenArbWaveform",
+            _to_debug(channel.value, "waveform_buffer", waveform.size),
+            __status_code,
         )
 
     return __waveform

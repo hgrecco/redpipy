@@ -7,6 +7,7 @@
     :copyright: 2024 by redpipy Authors, see AUTHORS for more details.
     :license: BSD, see LICENSE for more details.
 """
+from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any
