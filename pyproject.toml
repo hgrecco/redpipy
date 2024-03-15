@@ -59,6 +59,27 @@ addopts = "--import-mode=importlib --doctest-modules"
 pythonpath = "src"
 
 [tool.ruff]
-select = ["E", "F", "I"]
 extend-include = ["*.ipynb"]
 exclude = ["csrc/sources"]
+extend-exclude = ["build"]
+line-length=88
+
+[tool.ruff.lint.isort]
+required-imports = ["from __future__ import annotations"]
+known-first-party= ["redpipy"]
+
+[tool.ruff.lint]
+extend-select = [
+  "I",           # isort
+]
+ignore = [
+  # whitespace before ':' - doesn't work well with black
+  # "E203",
+  "E402",
+  # line too long - let black worry about that
+  "E501",
+  # do not assign a lambda expression, use a def
+  "E731",
+  # line break before binary operator
+  # "W503"
+]
