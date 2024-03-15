@@ -180,7 +180,7 @@ def get_write_pointer_at_trig(channel: constants.Channel) -> int:
     return __pos
 
 
-def get_memory_region(_start: int, _size: int) -> tuple[int, int]:
+def get_memory_region() -> tuple[int, int]:
     """Get reserved memory for DMA mode
 
     C Parameters
@@ -192,12 +192,10 @@ def get_memory_region(_start: int, _size: int) -> tuple[int, int]:
 
     """
 
-    __status_code, ___start, ___size = rp.rp_AcqAxiGetMemoryRegion(_start, _size)
+    __status_code, ___start, ___size = rp.rp_AcqAxiGetMemoryRegion()
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_AcqAxiGetMemoryRegion", _to_debug(_start, _size), __status_code
-        )
+        raise RPPError("rp_AcqAxiGetMemoryRegion", _to_debug(), __status_code)
 
     return ___start, ___size
 
