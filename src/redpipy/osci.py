@@ -105,7 +105,7 @@ class Channel:
     # Is there a real way to enable/disable a channel?
     enabled: bool = False
 
-    def __init__(self, channel: Literal[1, 2], gain: Literal[1, 20] = 1):
+    def __init__(self, channel: Literal[1, 2], gain: Literal[1, 5] = 1):
         if channel == 1:
             self.channel = constants.Channel.CH_1
         elif channel == 2:
@@ -127,11 +127,11 @@ class Channel:
         """Get trace (in ADU)."""
         return acq.get_oldest_data_raw(self.channel, size=size)
 
-    def set_gain(self, gain: Literal[1, 20]):
+    def set_gain(self, gain: Literal[1, 5]):
         if gain == 1:
-            acq.set_gain(self.channel, constants.PinState.HIGH)
-        elif gain == 5:
             acq.set_gain(self.channel, constants.PinState.LOW)
+        elif gain == 5:
+            acq.set_gain(self.channel, constants.PinState.HIGH)
 
 
 class Oscilloscope:
