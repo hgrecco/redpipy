@@ -48,7 +48,7 @@ def get_buffer_fill_state(channel: constants.Channel) -> bool:
     return __state
 
 
-def set_decimation_factor(decimation: int) -> None:
+def set_decimation_factor(decimation: constants.Decimation) -> None:
     """Sets the decimation used at acquiring signal for AXI. You can specify
     values in the range (1,2,4,8,16-65536)
 
@@ -59,7 +59,7 @@ def set_decimation_factor(decimation: int) -> None:
 
     """
 
-    __status_code = rp.rp_AcqAxiSetDecimationFactor(decimation)
+    __status_code = rp.rp_AcqAxiSetDecimationFactor(decimation.value)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
