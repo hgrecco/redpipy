@@ -7,9 +7,35 @@ import time
 import numpy as np
 
 from .rpwrap import acq, acq_axi, constants, rp
+from . import common
+from typing_extensions import Literal
 
-DATA_SIZE = 64
+# At most 32 buffer size (32 * 2**14)
+DATA_SIZE = 524288
 
+_DECIMATION_MAP = common.TwoWayDict[
+    Literal[1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192,
+            16384, 32768, 65536], constants.Decimation
+](
+    {
+        1:constants.Decimation.DEC_1,
+        2:constants.Decimation.DEC_2,
+        4:constants.Decimation.DEC_4,
+        8:constants.Decimation.DEC_8,
+        16:constants.Decimation.DEC_16,
+        32:constants.Decimation.DEC_32,
+        64:constants.Decimation.DEC_64,
+        128:constants.Decimation.DEC_128,
+        512:constants.Decimation.DEC_512,
+        1024:constants.Decimation.DEC_1024,
+        2048:constants.Decimation.DEC_2048,
+        4096:constants.Decimation.DEC_4096,
+        8192:constants.Decimation.DEC_8192,
+        16384:constants.Decimation.DEC_16384,
+        32768:constants.Decimation.DEC_32768,
+        65536:constants.Decimation.DEC_65536,
+    }
+)
 
 def acquire(decimation: int):
     dsize = DATA_SIZE
@@ -21,7 +47,7 @@ def acquire(decimation: int):
     print(f"Reserved memory start 0x{start:X} size 0x0x{size:X}")
     acq.reset_fpga()
 
-    acq_axi.set_decimation_factor(decimation)
+    acq_axi.set_decimation_factor(_DECIMATION_MAP[decimation])
 
     acq_axi.set_trigger_delay(constants.Channel.CH_1, dsize)
     acq_axi.set_trigger_delay(constants.Channel.CH_2, dsize)
