@@ -58,17 +58,20 @@ def acquire(decimation: int):
     acq_axi.enable(constants.Channel.CH_1, True)
     acq_axi.enable(constants.Channel.CH_2, True)
 
-    acq.set_trigger_level(constants.TriggerChannel.CH_1, 0)
+    acq.set_gain(constants.Channel.CH_1, constants.PinState.HIGH)
+    acq.set_gain(constants.Channel.CH_2, constants.PinState.HIGH)
+
+    acq.set_trigger_level(constants.TriggerChannel.CH_1, 0.0)
 
     acq.start()
 
     acq.set_trigger_src(constants.AcqTriggerSource.CHA_PE)
 
-    while acq.get_trigger_state() == constants.AcqTriggerState.TRIGGERED:
+    print("Waiting for trigger")
+    while acq.get_trigger_state() == constants.AcqTriggerState.WAITING:
         time.sleep(0.001)
 
-    time.sleep(1)
-
+    print("Filling buffer")
     while not acq_axi.get_buffer_fill_state(constants.Channel.CH_1):
         time.sleep(0.001)
 
