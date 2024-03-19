@@ -243,10 +243,10 @@ def get_data_raw(
 
     """
 
-    buffer = rp.iBuffer(size)
+    buffer = rp.i16Buffer(size)
 
     __status_code, __size, __buffer = rp.rp_AcqAxiGetDataRaw(
-        channel.value, pos, size, buffer
+        channel.value, pos, size, buffer.cast()
     )
 
     if __status_code != StatusCode.OK.value:
