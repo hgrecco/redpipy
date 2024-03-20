@@ -71,7 +71,7 @@ def calculate_amount_datapoints(min_trace_duration: float, sampling_rate: float)
 
 
 _TRIGGER_MAP = common.TwoWayDict[
-    tuple[Literal["ch1", "ch2", "ext"], bool], constants.AcqTriggerSource
+    tuple[Literal["ch1", "ch2", "ext", "int"], bool], constants.AcqTriggerSource
 ](
     {
         ("ch1", True): constants.AcqTriggerSource.CHA_PE,
@@ -86,7 +86,7 @@ _TRIGGER_MAP = common.TwoWayDict[
 )
 
 _TRIGGER_CH_MAP = common.TwoWayDict[
-    Literal["ch1", "ch2", "ext"], constants.TriggerChannel
+    Literal["ch1", "ch2", "ext", "int"], constants.TriggerChannel
 ](
     {
         "ch1": constants.TriggerChannel.CH_1,
