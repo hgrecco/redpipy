@@ -232,7 +232,7 @@ class Data:
 
         df = pd.DataFrame(out)
         df.attrs["timestamp"] = self.timestamp
-        for k, v in self.metadata:
+        for k, v in self.metadata.items():
             df.attrs[k] = v
 
         return df
