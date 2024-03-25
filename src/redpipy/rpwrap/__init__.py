@@ -22,4 +22,10 @@ def init():
     atexit.register(rp.release)
 
 
-__all__ = ["acq_axi", "acq", "constants", "gen", "rp"]
+class RPBoard:
+    def __init__(self) -> None:
+        if not rp.is_api_init():
+            init()
+
+
+__all__ = ["acq_axi", "acq", "constants", "gen", "rp", "RPBoard"]
