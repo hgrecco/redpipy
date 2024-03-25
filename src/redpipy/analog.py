@@ -245,9 +245,9 @@ class Data:
         self._set_as_completed()
 
     def _set_as_completed(self):
-        _ = self.time, self.ch1, self.ch2, self.time_raw, self.ch1_raw, self.ch2_raw
         object.__setattr__(self, "state", "completed")
         self.reader.stop(self.ch1_enabled, self.ch2_enabled)
+        _ = self.time, self.ch1, self.ch2, self.time_raw, self.ch1_raw, self.ch2_raw
 
     def cancel(self):
         object.__setattr__(self, "state", "canceled")
