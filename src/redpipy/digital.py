@@ -14,15 +14,16 @@ import time
 from typing import Literal
 
 from . import common
-from .rpwrap import constants, rp
+from .rpwrap import RPBoard, constants, rp
 
 
-class RPDO:
+class RPDO(RPBoard):
     def __init__(
         self,
         pin: tuple[Literal["n", "p"], int],
         state: bool = True,
     ):
+        super().__init__()
         self.pin = common.PIN_MAP[pin]
         rp.dpin_set_direction(self.pin, constants.PinDirection.OUT)
         self.set_state(state)
@@ -53,8 +54,9 @@ class RPDO:
         return str(self.state)
 
 
-class RPDI:
+class RPDI(RPBoard):
     def __init__(self, pin: tuple[Literal["n", "p"], int]):
+        super().__init__()
         self.pin = common.PIN_MAP[pin]
         rp.dpin_set_direction(self.pin, constants.PinDirection.IN)
 

@@ -26,6 +26,11 @@ class RPBoard:
     def __init__(self) -> None:
         if not rp.is_api_init():
             init()
+        self.device_metadata = {
+            "FPGA Unique DNA": rp.id_get_dna(),
+            "FPGA Synthesized ID": rp.id_get_id(),
+            "Library Version": rp.get_version(),
+        }
 
 
 __all__ = ["acq_axi", "acq", "constants", "gen", "rp", "RPBoard"]

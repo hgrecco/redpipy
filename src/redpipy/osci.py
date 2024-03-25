@@ -21,7 +21,7 @@ import pandas as pd
 
 from . import common
 from .analog import MAXIMUM_SAMPLING_RATE
-from .rpwrap import acq, constants, rp
+from .rpwrap import RPBoard, acq, constants
 
 
 def calculate_best_decimation(trace_duration: float) -> constants.Decimation:
@@ -98,15 +98,11 @@ class Channel:
             acq.set_gain(self.channel, constants.PinState.HIGH)
 
 
-class Oscilloscope:
+class Oscilloscope(RPBoard):
     """Oscilloscope"""
 
     def __init__(self) -> None:
-        self.device_metadata = {
-            "FPGA Unique DNA": rp.id_get_dna(),
-            "FPGA Synthesized ID": rp.id_get_id(),
-            "Library Version": rp.get_version(),
-        }
+        super().__init__()
         self.channel1 = Channel(1)
         self.channel2 = Channel(2)
         self.configure_trigger()

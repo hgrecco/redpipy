@@ -22,7 +22,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from . import common
-from .rpwrap import acq, acq_axi, constants, rp
+from .rpwrap import RPBoard, acq, acq_axi, constants
 
 
 def get_maximum_sampling_rate() -> float:
@@ -288,7 +288,7 @@ class Channel:
             acq.set_gain(self.channel, constants.PinState.HIGH)
 
 
-class RPAnalog:
+class RPAnalog(RPBoard):
     """Analog"""
 
     _last_data: Data | None = None
@@ -300,11 +300,7 @@ class RPAnalog:
     _trigger_level: float
 
     def __init__(self) -> None:
-        self.device_metadata = {
-            "FPGA Unique DNA": rp.id_get_dna(),
-            "FPGA Synthesized ID": rp.id_get_id(),
-            "Library Version": rp.get_version(),
-        }
+        super().__init__()
         self.channel1 = Channel(1)
         self.channel2 = Channel(2)
         self.configure_trigger()
