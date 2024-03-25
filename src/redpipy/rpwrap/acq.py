@@ -792,10 +792,10 @@ def get_data_pos_raw(
 
     """
 
-    buffer = rp.iBuffer(buffer_size)
+    buffer = rp.i16Buffer(buffer_size)
 
     __status_code, __buffer, __buffer_size = rp.rp_AcqGetDataPosRaw(
-        channel.value, start_pos, end_pos, buffer, buffer_size
+        channel.value, start_pos, end_pos, buffer.cast(), buffer_size
     )
 
     if __status_code != StatusCode.OK.value:
@@ -874,10 +874,10 @@ def get_data_raw(
 
     """
 
-    buffer = rp.iBuffer(size)
+    buffer = rp.i16Buffer(size)
 
     __status_code, __size, __buffer = rp.rp_AcqGetDataRaw(
-        channel.value, pos, size, buffer
+        channel.value, pos, size, buffer.cast()
     )
 
     if __status_code != StatusCode.OK.value:
@@ -913,10 +913,10 @@ def get_data_raw_with_calib(
 
     """
 
-    buffer = rp.iBuffer(size)
+    buffer = rp.i16Buffer(size)
 
     __status_code, __size, __buffer = rp.rp_AcqGetDataRawWithCalib(
-        channel.value, pos, size, buffer
+        channel.value, pos, size, buffer.cast()
     )
 
     if __status_code != StatusCode.OK.value:
@@ -952,10 +952,10 @@ def get_oldest_data_raw(
 
     """
 
-    buffer = rp.iBuffer(size)
+    buffer = rp.i16Buffer(size)
 
     __status_code, __size, __buffer = rp.rp_AcqGetOldestDataRaw(
-        channel.value, size, buffer
+        channel.value, size, buffer.cast()
     )
 
     if __status_code != StatusCode.OK.value:
@@ -989,16 +989,16 @@ def get_latest_data_raw(
 
     """
 
-    buffer = rp.iBuffer(size)
+    buffer = rp.i16Buffer(size)
 
     __status_code, __size, __buffer = rp.rp_AcqGetLatestDataRaw(
-        channel.value, size, buffer
+        channel.value, size, buffer.cast()
     )
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
             "rp_AcqGetLatestDataRaw",
-            _to_debug(channel.value, size, buffer),
+            _to_debug(channel.value, size, buffer.cast()),
             __status_code,
         )
 
