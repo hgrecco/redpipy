@@ -21,7 +21,7 @@ from .constants import StatusCode
 from .error import RPPError
 
 
-def _to_debug(values=tuple()):
+def _to_debug(*values):
     VALID = (int, float, str, bool)
     return tuple(value if isinstance(value, VALID) else type(value) for value in values)
 
