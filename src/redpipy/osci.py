@@ -13,23 +13,15 @@ from __future__ import annotations
 import math
 import time
 from datetime import datetime, timezone
-from typing import Any, Generator, Literal
+from typing import Any, Generator, Literal, get_args
 
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
 from . import common
+from .analog import MAXIMUM_SAMPLING_RATE
 from .rpwrap import acq, constants, rp
-
-
-def get_maximum_sampling_rate() -> float:
-    acq.set_decimation(constants.Decimation.DEC_1)
-    return acq.get_sampling_rate_hz()
-
-
-#: Samples per second
-MAXIMUM_SAMPLING_RATE = 125e6  # get_maximum_sampling_rate()
 
 
 def calculate_best_decimation(trace_duration: float) -> constants.Decimation:
@@ -42,8 +34,7 @@ def calculate_best_decimation(trace_duration: float) -> constants.Decimation:
         Duration of the trace in seconds
     """
 
-    for exponent in range(17):
-        decimation = int(2**exponent)
+    for decimation in get_args(common.DECIMATION_VALUES):
         sampling_rate = MAXIMUM_SAMPLING_RATE / decimation
         current_trace_duration = constants.ADC_BUFFER_SIZE / sampling_rate
         if current_trace_duration >= trace_duration:
@@ -68,33 +59,6 @@ def calculate_amount_datapoints(min_trace_duration: float, sampling_rate: float)
     amount_datapoints = math.ceil(min_trace_duration * sampling_rate)
     assert 0 < amount_datapoints <= constants.ADC_BUFFER_SIZE
     return amount_datapoints
-
-
-_TRIGGER_MAP = common.TwoWayDict[
-    tuple[Literal["ch1", "ch2", "ext", "int"], bool], constants.AcqTriggerSource
-](
-    {
-        ("ch1", True): constants.AcqTriggerSource.CHA_PE,
-        ("ch1", False): constants.AcqTriggerSource.CHA_NE,
-        ("ch2", True): constants.AcqTriggerSource.CHB_PE,
-        ("ch2", False): constants.AcqTriggerSource.CHB_PE,
-        ("ext", True): constants.AcqTriggerSource.EXT_PE,
-        ("ext", False): constants.AcqTriggerSource.EXT_NE,
-        ("int", True): constants.AcqTriggerSource.AWG_PE,
-        ("int", False): constants.AcqTriggerSource.AWG_NE,
-    }
-)
-
-_TRIGGER_CH_MAP = common.TwoWayDict[
-    Literal["ch1", "ch2", "ext", "int"], constants.TriggerChannel
-](
-    {
-        "ch1": constants.TriggerChannel.CH_1,
-        "ch2": constants.TriggerChannel.CH_2,
-        "ext": constants.TriggerChannel.CH_EXT,
-        "int": constants.TriggerChannel.CH_1,
-    }
-)
 
 
 class Channel:
@@ -180,8 +144,8 @@ class Oscilloscope:
         elif self._trigger_src == constants.AcqTriggerSource.NOW:
             return dict(source="now", level=None, positive_edge=None)
 
-        source, positive_edge = _TRIGGER_MAP.inv[self._trigger_src]
-        tch = _TRIGGER_CH_MAP[source]
+        source, positive_edge = common.TRIGGER_MAP.inv[self._trigger_src]
+        tch = common.TRIGGER_CH_MAP[source]
         return dict(
             source=source,
             level=acq.get_trigger_level(tch),
@@ -253,8 +217,8 @@ class Oscilloscope:
             Triggering occurs in positive edge, by default True
         """
 
-        src = _TRIGGER_MAP[(source, positive_edge)]
-        tch = _TRIGGER_CH_MAP[source]
+        src = common.TRIGGER_MAP[(source, positive_edge)]
+        tch = common.TRIGGER_CH_MAP[source]
 
         # Store this to be used when arming trigger.
         self._trigger_src = src
