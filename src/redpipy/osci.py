@@ -1,13 +1,14 @@
 """
-    redpipy.osci
-    ~~~~~~~~~~~~
+redpipy.osci
+~~~~~~~~~~~~
 
-    RedPitaya's oscilloscope.
+RedPitaya's oscilloscope.
 
 
-    :copyright: 2024 by redpipy Authors, see AUTHORS for more details.
-    :license: BSD, see LICENSE for more details.
+:copyright: 2024 by redpipy Authors, see AUTHORS for more details.
+:license: BSD, see LICENSE for more details.
 """
+
 from __future__ import annotations
 
 import math
@@ -226,7 +227,7 @@ class Oscilloscope(RPBoard):
     def set_timebase(
         self, trace_duration_hint: float, full_buffer: bool = False
     ) -> float:
-        """Configure the timebase.
+        """Configure the timebase by providing a trace duration.
 
         The duration of acquisition window can only take certain discrete
         values. It is guaranteed that the chosen one will be the shortest
@@ -253,6 +254,24 @@ class Oscilloscope(RPBoard):
         trace_duration = self._amount_datapoints / sampling_rate
 
         return trace_duration
+
+    def set_decimation(self, decimation_exponent: common.DECIMATION_EXPONENTS) -> int:
+        """Configure the timebase by providing a decimation.
+
+        Sets the sampling rate of the oscilloscope by providing the decimation.
+        The total duration of the trace is determined by the buffer size (2**14)
+        over the sampling rate.
+
+        Parameters
+        ----------
+        decimation_exponent
+            Decimation exponent to calculate the decimation of the sampling rate.
+        """
+
+        acq.set_decimation(get_args(common.DECIMATION_VALUES)[decimation_exponent])
+        sampling_rate = acq.get_sampling_rate_hz()
+        self._amount_datapoints = constants.ADC_BUFFER_SIZE
+        return self._amount_datapoints / sampling_rate
 
     def set_trigger_delay(
         self, delay: float, units: Literal["second", "trace"] = "trace"
