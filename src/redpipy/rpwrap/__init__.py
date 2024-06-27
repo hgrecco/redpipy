@@ -24,13 +24,14 @@ def init():
 
 class RPBoard:
     def __init__(self) -> None:
-        if not rp.is_api_init():
-            init()
+        # TODO: see if rp can be initialized once (rp.is_api_init() not working properly).
+        # Right now, rp has to be init manually in every script.
         self.device_metadata = {
             "FPGA Unique DNA": rp.id_get_dna(),
             "FPGA Synthesized ID": rp.id_get_id(),
             "Library Version": rp.get_version(),
         }
+        pass
 
 
 __all__ = ["acq_axi", "acq", "constants", "gen", "rp", "RPBoard"]
