@@ -268,7 +268,7 @@ class Oscilloscope(RPBoard):
             Decimation exponent to calculate the decimation of the sampling rate.
         """
 
-        acq.set_decimation(get_args(common.DECIMATION_VALUES)[decimation_exponent])
+        acq.set_decimation(common.DECIMATION_MAP[get_args(common.DECIMATION_VALUES)[decimation_exponent]])
         sampling_rate = acq.get_sampling_rate_hz()
         self._amount_datapoints = constants.ADC_BUFFER_SIZE
         return self._amount_datapoints / sampling_rate
