@@ -118,7 +118,7 @@ class Oscilloscope(RPBoard):
 
     def get_timebase_settings(self) -> dict[str, Any]:
         """Get timebase settings."""
-        trigger_delay = acq.get_trigger_delay() - constants.ADC_BUFFER_SIZE / 2
+        trigger_delay = acq.get_trigger_delay() + constants.ADC_BUFFER_SIZE / 2
         sampling_rate = acq.get_sampling_rate_hz()
         return dict(
             decimation=acq.get_decimation_factor(),
