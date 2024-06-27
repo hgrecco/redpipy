@@ -132,7 +132,7 @@ class ReadDataAcqAxi:
 
     def get_ch2(self) -> npt.NDArray[np.float32]:
         # TODO: for cache reasons, it would be nice to build this from ch2_raw
-        pos = acq_axi.get_write_pointer_at_trig(constants.Channel.CH_1)
+        pos = acq_axi.get_write_pointer_at_trig(constants.Channel.CH_2)
         return acq_axi.get_datav(constants.Channel.CH_2, pos, self.size)
 
     def wait_until_done(self, channel1: bool, channel2: bool):
@@ -158,7 +158,7 @@ class ReadDataAcqAxi:
             if not acq_axi.get_buffer_fill_state(constants.Channel.CH_1):
                 return False
         if channel2:
-            if not acq_axi.get_buffer_fill_state(constants.Channel.CH_1):
+            if not acq_axi.get_buffer_fill_state(constants.Channel.CH_2):
                 return False
 
         return True
