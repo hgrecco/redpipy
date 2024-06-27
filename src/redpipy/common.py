@@ -69,7 +69,7 @@ TRIGGER_MAP = TwoWayDict[
         ("ch1", True): constants.AcqTriggerSource.CHA_PE,
         ("ch1", False): constants.AcqTriggerSource.CHA_NE,
         ("ch2", True): constants.AcqTriggerSource.CHB_PE,
-        ("ch2", False): constants.AcqTriggerSource.CHB_PE,
+        ("ch2", False): constants.AcqTriggerSource.CHB_NE,
         ("ext", True): constants.AcqTriggerSource.EXT_PE,
         ("ext", False): constants.AcqTriggerSource.EXT_NE,
         ("int", True): constants.AcqTriggerSource.AWG_PE,
