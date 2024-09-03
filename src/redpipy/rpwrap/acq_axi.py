@@ -330,7 +330,7 @@ def get_datav_np(
     if __status_code != StatusCode.OK.value:
         raise RPPError(
             "rp_AcqAxiGetDataVNP",
-            _to_debug(channel.value, pos, size, buffer),
+            _to_debug(channel.value, pos, buffer),
             __status_code,
         )
 
