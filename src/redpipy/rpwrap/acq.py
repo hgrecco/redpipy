@@ -1111,6 +1111,43 @@ def get_oldest_datav(
     return __arr_buffer
 
 
+def get_oldest_datav_np(
+    channel: constants.Channel, size: int = constants.ADC_BUFFER_SIZE
+) -> npt.NDArray[np.float32]:
+    """Returns the ADC buffer in Volt units from the oldest sample to the
+    newest one. Output buffer must be at least 'size' long. CAUTION: Use
+    this method only when write pointer has stopped (Trigger happened and
+    writing stopped).
+
+    Parameters
+    ----------
+    channel
+        Channel A or B for which we want to retrieve the ADC buffer.
+    size
+        Length of the ADC buffer to retrieve. Returns length of filled
+        buffer. In case of too small buffer, required size is returned.
+    buffer
+        The output buffer gets filled with the selected part of the ADC
+        buffer.
+
+    """
+
+    buffer = np.empty(size, dtype=np.float32)
+
+    __status_code, __size, __buffer = rp.rp_AcqGetOldestDataVNP(
+        channel.value, size, buffer
+    )
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetOldestDataVNP",
+            _to_debug(channel.value, size, buffer),
+            __status_code,
+        )
+
+    return buffer
+
+
 def get_latest_datav(
     channel: constants.Channel, size: int = constants.ADC_BUFFER_SIZE
 ) -> npt.NDArray[np.float32]:

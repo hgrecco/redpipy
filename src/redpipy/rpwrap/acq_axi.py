@@ -300,6 +300,43 @@ def get_datav(
     return __arr_buffer
 
 
+def get_datav_np(
+    channel: constants.Channel, pos: int, size: int = constants.ADC_BUFFER_SIZE
+) -> npt.NDArray[np.float32]:
+    """Returns the AXI ADC buffer in Volt units from specified position and
+    desired size. Output buffer must be at least 'size' long.
+
+    Parameters
+    ----------
+    channel
+        Channel A or B for which we want to retrieve the ADC buffer.
+    pos
+        Starting position of the ADC buffer to retrieve
+    size
+        Length of the ADC buffer to retrieve. Returns length of filled
+        buffer. In case of too small buffer, required size is returned.
+    buffer
+        The output buffer gets filled with the selected part of the ADC
+        buffer.
+
+    """
+
+    buffer = np.empty(size)
+
+    __status_code, __size, __buffer = rp.rp_AcqAxiGetDataVNP(
+        channel.value, pos, size, buffer
+    )
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqAxiGetDataVNP",
+            _to_debug(channel.value, pos, size, buffer),
+            __status_code,
+        )
+
+    return buffer
+
+
 def set_buffer_samples(channel: constants.Channel, address: int, samples: int) -> None:
     """Sets the AXI ADC buffer address and size in samples.
 
