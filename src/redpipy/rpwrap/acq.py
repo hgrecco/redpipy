@@ -6,16 +6,17 @@ Pythonic wrapper for the rp package.
 
 Skipped functions
 -----------------
+- rp_AcqGetData
+- rp_AcqGetDataWithCorrection
 - rp_createBuffer
 - rp_deleteBuffer
 
 original file: rp_acq.h
-commit id: 1f7b7c35070dce637ac699d974d3648b45672f89
+commit id: 091fe576429543898cc10691b4de1d6465eca3ee
 
 :copyright: 2024 by redpipy Authors, see AUTHORS for more details.
 :license: BSD, see LICENSE for more details.
 """
-
 from __future__ import annotations
 
 import numpy as np
@@ -30,6 +31,80 @@ from .error import RPPError
 def _to_debug(*values):
     VALID = (int, float, str, bool)
     return tuple(value if isinstance(value, VALID) else type(value) for value in values)
+
+
+def set_split_trigger(enable: bool) -> None:
+    """Enables the mode when triggers in the oscilloscope operate
+    independently in the FPGA.
+
+    Parameters
+    ----------
+    enable
+        True for enabling and false disabling
+
+    """
+
+    __status_code = rp.rp_AcqSetSplitTrigger(enable)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqSetSplitTrigger", _to_debug(enable), __status_code)
+
+    return
+
+
+def get_split_trigger() -> bool:
+    """Returns the split mode state of the trigger.
+
+    Parameters
+    ----------
+    state
+        Returns status
+
+    """
+
+    __status_code, __state = rp.rp_AcqGetSplitTrigger()
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetSplitTrigger", _to_debug(), __status_code)
+
+    return __state
+
+
+def set_split_trigger_pass(enable: bool) -> None:
+    """This mode makes it possible to call the rp_AcqCh function even if
+    trigger sharing is not supported. Then these functions work as usual.
+
+    Parameters
+    ----------
+    enable
+        True for enabling and false disabling
+
+    """
+
+    __status_code = rp.rp_AcqSetSplitTriggerPass(enable)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqSetSplitTriggerPass", _to_debug(enable), __status_code)
+
+    return
+
+
+def get_split_trigger_pass() -> bool:
+    """Returns the state of function forwarding.
+
+    Parameters
+    ----------
+    state
+        Returns status
+
+    """
+
+    __status_code, __state = rp.rp_AcqGetSplitTriggerPass()
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetSplitTriggerPass", _to_debug(), __status_code)
+
+    return __state
 
 
 def set_arm_keep(enable: bool) -> None:
@@ -68,6 +143,54 @@ def get_arm_keep() -> bool:
     return __state
 
 
+def set_arm_keep_ch(channel: constants.Channel, enable: bool) -> None:
+    """Enables continous acquirement even after trigger has happened. This
+    channel separation feature works with FPGA support. You can also
+    enable function forwarding via rp_AcqSetSplitTriggerPass if this mode
+    is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    enable
+        True for enabling and false disabling
+
+    """
+
+    __status_code = rp.rp_AcqSetArmKeepCh(channel.value, enable)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqSetArmKeepCh", _to_debug(channel.value, enable), __status_code
+        )
+
+    return
+
+
+def get_arm_keep_ch(channel: constants.Channel) -> bool:
+    """Gets status of continous acquirement even after trigger has happened.
+    This channel separation feature works with FPGA support. You can also
+    enable function forwarding via rp_AcqSetSplitTriggerPass if this mode
+    is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    state
+        Returns status
+
+    """
+
+    __status_code, __state = rp.rp_AcqGetArmKeepCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetArmKeepCh", _to_debug(channel.value), __status_code)
+
+    return __state
+
+
 def get_buffer_fill_state() -> bool:
     """Indicates whether the ADC buffer was full of data. The length of the
     buffer is determined by the delay. By default, the delay is half the
@@ -84,6 +207,32 @@ def get_buffer_fill_state() -> bool:
 
     if __status_code != StatusCode.OK.value:
         raise RPPError("rp_AcqGetBufferFillState", _to_debug(), __status_code)
+
+    return __state
+
+
+def get_buffer_fill_state_ch(channel: constants.Channel) -> bool:
+    """Indicates whether the ADC buffer was full of data. The length of the
+    buffer is determined by the delay. By default, the delay is half the
+    buffer. This channel separation feature works with FPGA support. You
+    can also enable function forwarding via rp_AcqSetSplitTriggerPass if
+    this mode is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    state
+        Returns status
+
+    """
+
+    __status_code, __state = rp.rp_AcqGetBufferFillStateCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetBufferFillStateCh", _to_debug(channel.value), __status_code
+        )
 
     return __state
 
@@ -110,6 +259,36 @@ def set_decimation(decimation: constants.Decimation) -> None:
     return
 
 
+def set_decimation_ch(
+    channel: constants.Channel, decimation: constants.Decimation
+) -> None:
+    """Sets the decimation used at acquiring signal. There is only a set of
+    pre-defined decimation values which can be specified. See the
+    #rp_acq_decimation_t enum values. This channel separation feature
+    works with FPGA support. You can also enable function forwarding via
+    rp_AcqSetSplitTriggerPass if this mode is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    decimation
+        Specify one of pre-defined decimation values
+
+    """
+
+    __status_code = rp.rp_AcqSetDecimationCh(channel.value, decimation.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqSetDecimationCh",
+            _to_debug(channel.value, decimation.value),
+            __status_code,
+        )
+
+    return
+
+
 def get_decimation() -> constants.Decimation:
     """Gets the decimation used at acquiring signal. There is only a set of
     pre-defined decimation values which can be specified. See the
@@ -127,6 +306,31 @@ def get_decimation() -> constants.Decimation:
 
     if __status_code != StatusCode.OK.value:
         raise RPPError("rp_AcqGetDecimation", _to_debug(), __status_code)
+
+    return constants.Decimation(__decimation)
+
+
+def get_decimation_ch(channel: constants.Channel) -> constants.Decimation:
+    """Gets the decimation used at acquiring signal. There is only a set of
+    pre-defined decimation values which can be specified. See the
+    #rp_acq_decimation_t enum values. This channel separation feature
+    works with FPGA support. You can also enable function forwarding via
+    rp_AcqSetSplitTriggerPass if this mode is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    decimation
+        Returns one of pre-defined decimation values which is currently
+        set.
+
+    """
+
+    __status_code, __decimation = rp.rp_AcqGetDecimationCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetDecimationCh", _to_debug(channel.value), __status_code)
 
     return constants.Decimation(__decimation)
 
@@ -199,6 +403,61 @@ def get_decimation_factor() -> int:
     return __decimation
 
 
+def set_decimation_factor_ch(channel: constants.Channel, decimation: int) -> None:
+    """Sets the decimation used at acquiring signal. You can specify values
+    in the range (1,2,4,8,16-65536) This channel separation feature works
+    with FPGA support. You can also enable function forwarding via
+    rp_AcqSetSplitTriggerPass if this mode is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    decimation
+        Decimation values
+
+    """
+
+    __status_code = rp.rp_AcqSetDecimationFactorCh(channel.value, decimation)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqSetDecimationFactorCh",
+            _to_debug(channel.value, decimation),
+            __status_code,
+        )
+
+    return
+
+
+def get_decimation_factor_ch(channel: constants.Channel) -> int:
+    """Gets the decimation factor used at acquiring signal in a numerical
+    form. Although this method returns an integer value representing the
+    current factor of the decimation, there is only a set of pre-defined
+    decimation factor values which can be returned. See the
+    #rp_acq_decimation_t enum values. This channel separation feature
+    works with FPGA support. You can also enable function forwarding via
+    rp_AcqSetSplitTriggerPass if this mode is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    decimation
+        Returns decimation factor value which is currently set.
+
+    """
+
+    __status_code, __decimation = rp.rp_AcqGetDecimationFactorCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetDecimationFactorCh", _to_debug(channel.value), __status_code
+        )
+
+    return __decimation
+
+
 def get_sampling_rate_hz() -> float:
     """Gets the sampling rate for acquiring signal in a numerical form in Hz.
     Although this method returns a float value representing the current
@@ -217,6 +476,34 @@ def get_sampling_rate_hz() -> float:
 
     if __status_code != StatusCode.OK.value:
         raise RPPError("rp_AcqGetSamplingRateHz", _to_debug(), __status_code)
+
+    return __sampling_rate
+
+
+def get_sampling_rate_hz_ch(channel: constants.Channel) -> float:
+    """Gets the sampling rate for acquiring signal in a numerical form in Hz.
+    Although this method returns a float value representing the current
+    value of the sampling rate, there is only a set of pre-defined
+    sampling rate values which can be returned. See the
+    #rp_acq_sampling_rate_t enum values. This channel separation feature
+    works with FPGA support. You can also enable function forwarding via
+    rp_AcqSetSplitTriggerPass if this mode is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    sampling_rate
+        returns currently set sampling rate in Hz
+
+    """
+
+    __status_code, __sampling_rate = rp.rp_AcqGetSamplingRateHzCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetSamplingRateHzCh", _to_debug(channel.value), __status_code
+        )
 
     return __sampling_rate
 
@@ -262,6 +549,109 @@ def get_averaging() -> bool:
     return __enable
 
 
+def set_offset(channel: constants.Channel, value: float) -> None:
+    """Adds a voltage offset when requesting data. Only affects float and
+    double data types. Raw data remains unchanged.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    value
+        Offset value in volts
+
+    """
+
+    __status_code = rp.rp_AcqSetOffset(channel.value, value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqSetOffset", _to_debug(channel.value, value), __status_code
+        )
+
+    return
+
+
+def get_offset(channel: constants.Channel) -> float:
+    """Returns the offset value.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    value
+        Offset value in volts
+
+    """
+
+    __status_code, __value = rp.rp_AcqGetOffset(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetOffset", _to_debug(channel.value), __status_code)
+
+    return __value
+
+
+def set_averaging_ch(channel: constants.Channel, enable: bool) -> None:
+    """Enables or disables averaging of data between samples. Data between
+    samples can be averaged by setting the averaging flag in the Data
+    decimation register. This channel separation feature works with FPGA
+    support. You can also enable function forwarding via
+    rp_AcqSetSplitTriggerPass if this mode is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+
+
+    C Parameters
+    ------------
+    enabled
+        When true, the averaging is enabled, otherwise it is disabled.
+
+    """
+
+    __status_code = rp.rp_AcqSetAveragingCh(channel.value, enable)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqSetAveragingCh", _to_debug(channel.value, enable), __status_code
+        )
+
+    return
+
+
+def get_averaging_ch(channel: constants.Channel) -> bool:
+    """Returns information if averaging of data between samples is enabled or
+    disabled. Data between samples can be averaged by setting the
+    averaging flag in the Data decimation register. This channel
+    separation feature works with FPGA support. You can also enable
+    function forwarding via rp_AcqSetSplitTriggerPass if this mode is not
+    available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+
+
+    C Parameters
+    ------------
+    enabled
+        Set to true when the averaging is enabled, otherwise is it set to
+        false.
+
+    """
+
+    __status_code, __enable = rp.rp_AcqGetAveragingCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetAveragingCh", _to_debug(channel.value), __status_code)
+
+    return __enable
+
+
 def set_trigger_src(source: constants.AcqTriggerSource) -> None:
     """Sets the trigger source used at acquiring signal. When acquiring is
     started, the FPGA waits for the trigger condition on the specified
@@ -279,6 +669,37 @@ def set_trigger_src(source: constants.AcqTriggerSource) -> None:
 
     if __status_code != StatusCode.OK.value:
         raise RPPError("rp_AcqSetTriggerSrc", _to_debug(source.value), __status_code)
+
+    return
+
+
+def set_trigger_src_ch(
+    channel: constants.Channel, source: constants.AcqTriggerSource
+) -> None:
+    """Sets the trigger source used at acquiring signal. When acquiring is
+    started, the FPGA waits for the trigger condition on the specified
+    source and when the condition is met, it starts writing the signal to
+    the buffer. This channel separation feature works with FPGA support.
+    You can also enable function forwarding via rp_AcqSetSplitTriggerPass
+    if this mode is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    source
+        Trigger source.
+
+    """
+
+    __status_code = rp.rp_AcqSetTriggerSrcCh(channel.value, source.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqSetTriggerSrcCh",
+            _to_debug(channel.value, source.value),
+            __status_code,
+        )
 
     return
 
@@ -304,6 +725,31 @@ def get_trigger_src() -> constants.AcqTriggerSource:
     return constants.AcqTriggerSource(__source)
 
 
+def get_trigger_src_ch(channel: constants.Channel) -> constants.AcqTriggerSource:
+    """Gets the trigger source used at acquiring signal. When acquiring is
+    started, the FPGA waits for the trigger condition on the specified
+    source and when the condition is met, it starts writing the signal to
+    the buffer. This channel separation feature works with FPGA support.
+    You can also enable function forwarding via rp_AcqSetSplitTriggerPass
+    if this mode is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    source
+        Currently set trigger source.
+
+    """
+
+    __status_code, __source = rp.rp_AcqGetTriggerSrcCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetTriggerSrcCh", _to_debug(channel.value), __status_code)
+
+    return constants.AcqTriggerSource(__source)
+
+
 def get_trigger_state() -> constants.AcqTriggerState:
     """Returns the trigger state. Either it is waiting for a trigger to
     happen, or it has already been triggered. By default it is in the
@@ -320,6 +766,33 @@ def get_trigger_state() -> constants.AcqTriggerState:
 
     if __status_code != StatusCode.OK.value:
         raise RPPError("rp_AcqGetTriggerState", _to_debug(), __status_code)
+
+    return constants.AcqTriggerState(__state)
+
+
+def get_trigger_state_ch(channel: constants.Channel) -> constants.AcqTriggerState:
+    """Returns the trigger state. Either it is waiting for a trigger to
+    happen, or it has already been triggered. By default it is in the
+    triggered state, which is treated the same as disabled. This channel
+    separation feature works with FPGA support. You can also enable
+    function forwarding via rp_AcqSetSplitTriggerPass if this mode is not
+    available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    state
+        Trigger state
+
+    """
+
+    __status_code, __state = rp.rp_AcqGetTriggerStateCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetTriggerStateCh", _to_debug(channel.value), __status_code
+        )
 
     return constants.AcqTriggerState(__state)
 
@@ -345,6 +818,34 @@ def set_trigger_delay(decimated_data_num: int) -> None:
     return
 
 
+def set_trigger_delay_ch(channel: constants.Channel, decimated_data_num: int) -> None:
+    """Sets the number of decimated data after trigger written into memory.
+    This channel separation feature works with FPGA support. You can also
+    enable function forwarding via rp_AcqSetSplitTriggerPass if this mode
+    is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    decimated_data_num
+        Number of decimated data. It must not be higher than the ADC
+        buffer size.
+
+    """
+
+    __status_code = rp.rp_AcqSetTriggerDelayCh(channel.value, decimated_data_num)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqSetTriggerDelayCh",
+            _to_debug(channel.value, decimated_data_num),
+            __status_code,
+        )
+
+    return
+
+
 def get_trigger_delay() -> int:
     """Returns current number of decimated data after trigger written into
     memory.
@@ -360,6 +861,31 @@ def get_trigger_delay() -> int:
 
     if __status_code != StatusCode.OK.value:
         raise RPPError("rp_AcqGetTriggerDelay", _to_debug(), __status_code)
+
+    return __decimated_data_num
+
+
+def get_trigger_delay_ch(channel: constants.Channel) -> int:
+    """Returns current number of decimated data after trigger written into
+    memory. This channel separation feature works with FPGA support. You
+    can also enable function forwarding via rp_AcqSetSplitTriggerPass if
+    this mode is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    decimated_data_num
+        Number of decimated data.
+
+    """
+
+    __status_code, __decimated_data_num = rp.rp_AcqGetTriggerDelayCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetTriggerDelayCh", _to_debug(channel.value), __status_code
+        )
 
     return __decimated_data_num
 
@@ -385,6 +911,36 @@ def set_trigger_delay_direct(decimated_data_num: int) -> None:
     return
 
 
+def set_trigger_delay_direct_ch(
+    channel: constants.Channel, decimated_data_num: int
+) -> None:
+    """Sets the number of decimated data after trigger written into memory.
+    This channel separation feature works with FPGA support. You can also
+    enable function forwarding via rp_AcqSetSplitTriggerPass if this mode
+    is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    decimated_data_num
+        Number of decimated data. It must not be higher than the ADC
+        buffer size.
+
+    """
+
+    __status_code = rp.rp_AcqSetTriggerDelayDirectCh(channel.value, decimated_data_num)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqSetTriggerDelayDirectCh",
+            _to_debug(channel.value, decimated_data_num),
+            __status_code,
+        )
+
+    return
+
+
 def get_trigger_delay_direct() -> int:
     """Returns current number of decimated data after trigger written into
     memory.
@@ -400,6 +956,33 @@ def get_trigger_delay_direct() -> int:
 
     if __status_code != StatusCode.OK.value:
         raise RPPError("rp_AcqGetTriggerDelayDirect", _to_debug(), __status_code)
+
+    return __decimated_data_num
+
+
+def get_trigger_delay_direct_ch(channel: constants.Channel) -> int:
+    """Returns current number of decimated data after trigger written into
+    memory. This channel separation feature works with FPGA support. You
+    can also enable function forwarding via rp_AcqSetSplitTriggerPass if
+    this mode is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    decimated_data_num
+        Number of decimated data.
+
+    """
+
+    __status_code, __decimated_data_num = rp.rp_AcqGetTriggerDelayDirectCh(
+        channel.value
+    )
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetTriggerDelayDirectCh", _to_debug(channel.value), __status_code
+        )
 
     return __decimated_data_num
 
@@ -424,6 +1007,34 @@ def set_trigger_delay_ns(time_ns: int) -> None:
     return
 
 
+def set_trigger_delay_ns_ch(channel: constants.Channel, time_ns: int) -> None:
+    """Sets the amount of decimated data in nanoseconds after trigger written
+    into memory. This channel separation feature works with FPGA support.
+    You can also enable function forwarding via rp_AcqSetSplitTriggerPass
+    if this mode is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    time_ns
+        Time in nanoseconds. Number of ADC samples within the specified
+        time must not be higher than the ADC buffer size.
+
+    """
+
+    __status_code = rp.rp_AcqSetTriggerDelayNsCh(channel.value, time_ns)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqSetTriggerDelayNsCh",
+            _to_debug(channel.value, time_ns),
+            __status_code,
+        )
+
+    return
+
+
 def get_trigger_delay_ns() -> int:
     """Returns the current amount of decimated data in nanoseconds after
     trigger written into memory.
@@ -439,6 +1050,31 @@ def get_trigger_delay_ns() -> int:
 
     if __status_code != StatusCode.OK.value:
         raise RPPError("rp_AcqGetTriggerDelayNs", _to_debug(), __status_code)
+
+    return __time_ns
+
+
+def get_trigger_delay_ns_ch(channel: constants.Channel) -> int:
+    """Returns the current amount of decimated data in nanoseconds after
+    trigger written into memory. This channel separation feature works
+    with FPGA support. You can also enable function forwarding via
+    rp_AcqSetSplitTriggerPass if this mode is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    time_ns
+        Time in nanoseconds.
+
+    """
+
+    __status_code, __time_ns = rp.rp_AcqGetTriggerDelayNsCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetTriggerDelayNsCh", _to_debug(channel.value), __status_code
+        )
 
     return __time_ns
 
@@ -465,6 +1101,34 @@ def set_trigger_delay_ns_direct(time_ns: int) -> None:
     return
 
 
+def set_trigger_delay_ns_direct_ch(channel: constants.Channel, time_ns: int) -> None:
+    """Sets the amount of decimated data in nanoseconds after trigger written
+    into memory. This channel separation feature works with FPGA support.
+    You can also enable function forwarding via rp_AcqSetSplitTriggerPass
+    if this mode is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    time_ns
+        Time in nanoseconds. Number of ADC samples within the specified
+        time must not be higher than the ADC buffer size.
+
+    """
+
+    __status_code = rp.rp_AcqSetTriggerDelayNsDirectCh(channel.value, time_ns)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqSetTriggerDelayNsDirectCh",
+            _to_debug(channel.value, time_ns),
+            __status_code,
+        )
+
+    return
+
+
 def get_trigger_delay_ns_direct() -> int:
     """Returns the current amount of decimated data in nanoseconds after
     trigger written into memory.
@@ -484,6 +1148,31 @@ def get_trigger_delay_ns_direct() -> int:
     return __time_ns
 
 
+def get_trigger_delay_ns_direct_ch(channel: constants.Channel) -> int:
+    """Returns the current amount of decimated data in nanoseconds after
+    trigger written into memory. This channel separation feature works
+    with FPGA support. You can also enable function forwarding via
+    rp_AcqSetSplitTriggerPass if this mode is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    time_ns
+        Time in nanoseconds.
+
+    """
+
+    __status_code, __time_ns = rp.rp_AcqGetTriggerDelayNsDirectCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetTriggerDelayNsDirectCh", _to_debug(channel.value), __status_code
+        )
+
+    return __time_ns
+
+
 def get_pre_trigger_counter() -> int:
     """Returns the number of valid data ponts before trigger.
 
@@ -498,6 +1187,35 @@ def get_pre_trigger_counter() -> int:
 
     if __status_code != StatusCode.OK.value:
         raise RPPError("rp_AcqGetPreTriggerCounter", _to_debug(), __status_code)
+
+    return __value
+
+
+def get_pre_trigger_counter_ch(channel: constants.Channel) -> int:
+    """Returns the number of valid data ponts before trigger. This channel
+    separation feature works with FPGA support. You can also enable
+    function forwarding via rp_AcqSetSplitTriggerPass if this mode is not
+    available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+
+
+    C Parameters
+    ------------
+    time_ns
+        number of data points.
+
+    """
+
+    __status_code, __value = rp.rp_AcqGetPreTriggerCounterCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetPreTriggerCounterCh", _to_debug(channel.value), __status_code
+        )
 
     return __value
 
@@ -647,7 +1365,9 @@ def get_gainv(channel: constants.Channel) -> float:
 
 
 def get_write_pointer() -> int:
-    """Returns current position of ADC write pointer.
+    """Returns current position of ADC write pointer.  The write pointer
+    position is the index, within the ADC buffer, of the last array cell
+    that has been written to.
 
     Parameters
     ----------
@@ -660,6 +1380,30 @@ def get_write_pointer() -> int:
 
     if __status_code != StatusCode.OK.value:
         raise RPPError("rp_AcqGetWritePointer", _to_debug(), __status_code)
+
+    return __pos
+
+
+def get_write_pointer_ch(channel: constants.Channel) -> int:
+    """Returns current position of ADC write pointer.  The write pointer
+    position is the index, within the ADC buffer, of the last array cell
+    that has been written to.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    pos
+        Write pointer position
+
+    """
+
+    __status_code, __pos = rp.rp_AcqGetWritePointerCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetWritePointerCh", _to_debug(channel.value), __status_code
+        )
 
     return __pos
 
@@ -682,6 +1426,31 @@ def get_write_pointer_at_trig() -> int:
     return __pos
 
 
+def get_write_pointer_at_trig_ch(channel: constants.Channel) -> int:
+    """Returns position of ADC write pointer at time when trigger arrived.
+    This channel separation feature works with FPGA support. You can also
+    enable function forwarding via rp_AcqSetSplitTriggerPass if this mode
+    is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    pos
+        Write pointer position
+
+    """
+
+    __status_code, __pos = rp.rp_AcqGetWritePointerAtTrigCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetWritePointerAtTrigCh", _to_debug(channel.value), __status_code
+        )
+
+    return __pos
+
+
 def start() -> None:
     """Starts the acquire. Signals coming from the input channels are
     acquired and written into memory.
@@ -691,6 +1460,27 @@ def start() -> None:
 
     if __status_code != StatusCode.OK.value:
         raise RPPError("rp_AcqStart", _to_debug(), __status_code)
+
+    return
+
+
+def start_ch(channel: constants.Channel) -> None:
+    """Starts the acquire. Signals coming from the input channels are
+    acquired and written into memory. This channel separation feature
+    works with FPGA support. You can also enable function forwarding via
+    rp_AcqSetSplitTriggerPass if this mode is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+
+    """
+
+    __status_code = rp.rp_AcqStartCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqStartCh", _to_debug(channel.value), __status_code)
 
     return
 
@@ -706,6 +1496,26 @@ def stop() -> None:
     return
 
 
+def stop_ch(channel: constants.Channel) -> None:
+    """Stops the acquire. This channel separation feature works with FPGA
+    support. You can also enable function forwarding via
+    rp_AcqSetSplitTriggerPass if this mode is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+
+    """
+
+    __status_code = rp.rp_AcqStopCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqStopCh", _to_debug(channel.value), __status_code)
+
+    return
+
+
 def reset() -> None:
     """Resets the acquire writing state machine and set by default all
     parameters.
@@ -715,6 +1525,27 @@ def reset() -> None:
 
     if __status_code != StatusCode.OK.value:
         raise RPPError("rp_AcqReset", _to_debug(), __status_code)
+
+    return
+
+
+def reset_ch(channel: constants.Channel) -> None:
+    """Resets the acquire writing state machine and set by default all
+    parameters. This channel separation feature works with FPGA support.
+    You can also enable function forwarding via rp_AcqSetSplitTriggerPass
+    if this mode is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+
+    """
+
+    __status_code = rp.rp_AcqResetCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqResetCh", _to_debug(channel.value), __status_code)
 
     return
 
@@ -741,6 +1572,27 @@ def unlock_trigger() -> None:
     return
 
 
+def unlock_trigger_ch(channel: constants.Channel) -> None:
+    """Unlocks trigger capture after a trigger has been detected. This
+    channel separation feature works with FPGA support. You can also
+    enable function forwarding via rp_AcqSetSplitTriggerPass if this mode
+    is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+
+    """
+
+    __status_code = rp.rp_AcqUnlockTriggerCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqUnlockTriggerCh", _to_debug(channel.value), __status_code)
+
+    return
+
+
 def get_unlock_trigger() -> bool:
     """Returns the trigger's current blocking state.."""
 
@@ -748,6 +1600,29 @@ def get_unlock_trigger() -> bool:
 
     if __status_code != StatusCode.OK.value:
         raise RPPError("rp_AcqGetUnlockTrigger", _to_debug(), __status_code)
+
+    return __state
+
+
+def get_unlock_trigger_ch(channel: constants.Channel) -> bool:
+    """Returns the trigger's current blocking state.. This channel separation
+    feature works with FPGA support. You can also enable function
+    forwarding via rp_AcqSetSplitTriggerPass if this mode is not
+    available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+
+    """
+
+    __status_code, __state = rp.rp_AcqGetUnlockTriggerCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetUnlockTriggerCh", _to_debug(channel.value), __status_code
+        )
 
     return __state
 
@@ -793,10 +1668,10 @@ def get_data_pos_raw(
 
     """
 
-    buffer = rp.i16Buffer(buffer_size)
+    buffer = rp.iBuffer(buffer_size)
 
     __status_code, __buffer, __buffer_size = rp.rp_AcqGetDataPosRaw(
-        channel.value, start_pos, end_pos, buffer.cast(), buffer_size
+        channel.value, start_pos, end_pos, buffer, buffer_size
     )
 
     if __status_code != StatusCode.OK.value:
@@ -809,6 +1684,53 @@ def get_data_pos_raw(
     __arr_buffer = np.fromiter(buffer, dtype=np.int16, count=__buffer_size)
 
     return __arr_buffer
+
+
+def get_data_pos_raw_np(
+    channel: constants.Channel,
+    start_pos: int,
+    end_pos: int,
+    size: int = constants.ADC_BUFFER_SIZE,
+    np_buffer: npt.NDArray[np.int16] | None = None,
+) -> npt.NDArray[np.int16]:
+    """Returns the ADC buffer in raw units from start to end position.
+
+    Parameters
+    ----------
+    channel
+        Channel A or B for which we want to retrieve the ADC buffer.
+    start_pos
+        Starting position of the ADC buffer to retrieve.
+    end_pos
+        Ending position of the ADC buffer to retrieve.
+    np_buffer
+        The output buffer gets filled with the selected part of the ADC
+        buffer.
+
+
+    C Parameters
+    ------------
+    buffer_size
+        Length of input buffer. Returns length of filled buffer. In case
+        of too small buffer, required size is returned.
+
+    """
+
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.int16)
+
+    __status_code = rp.rp_AcqGetDataPosRawNP(
+        channel.value, start_pos, end_pos, np_buffer
+    )
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetDataPosRawNP",
+            _to_debug(channel.value, start_pos, end_pos, np_buffer),
+            __status_code,
+        )
+
+    return np_buffer
 
 
 def get_data_posv(
@@ -854,6 +1776,51 @@ def get_data_posv(
     return __arr_buffer
 
 
+def get_data_pos_vnp(
+    channel: constants.Channel,
+    start_pos: int,
+    end_pos: int,
+    size: int = constants.ADC_BUFFER_SIZE,
+    np_buffer: npt.NDArray[np.float32] | None = None,
+) -> npt.NDArray[np.float32]:
+    """Returns the ADC buffer in Volt units from start to end position.
+
+    Parameters
+    ----------
+    channel
+        Channel A or B for which we want to retrieve the ADC buffer.
+    start_pos
+        Starting position of the ADC buffer to retrieve.
+    end_pos
+        Ending position of the ADC buffer to retrieve.
+    np_buffer
+        The output buffer gets filled with the selected part of the ADC
+        buffer.
+
+
+    C Parameters
+    ------------
+    buffer_size
+        Length of input buffer. Returns length of filled buffer. In case
+        of too small buffer, required size is returned.
+
+    """
+
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.float32)
+
+    __status_code = rp.rp_AcqGetDataPosVNP(channel.value, start_pos, end_pos, np_buffer)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetDataPosVNP",
+            _to_debug(channel.value, start_pos, end_pos, np_buffer),
+            __status_code,
+        )
+
+    return np_buffer
+
+
 def get_data_raw(
     channel: constants.Channel, pos: int, size: int = constants.ADC_BUFFER_SIZE
 ) -> npt.NDArray[np.int16]:
@@ -875,10 +1842,10 @@ def get_data_raw(
 
     """
 
-    buffer = rp.i16Buffer(size)
+    buffer = rp.iBuffer(size)
 
     __status_code, __size, __buffer = rp.rp_AcqGetDataRaw(
-        channel.value, pos, size, buffer.cast()
+        channel.value, pos, size, buffer
     )
 
     if __status_code != StatusCode.OK.value:
@@ -891,6 +1858,45 @@ def get_data_raw(
     __arr_buffer = np.fromiter(buffer, dtype=np.int16, count=__size)
 
     return __arr_buffer
+
+
+def get_data_raw_np(
+    channel: constants.Channel,
+    pos: int,
+    size: int = constants.ADC_BUFFER_SIZE,
+    np_buffer: npt.NDArray[np.int16] | None = None,
+) -> npt.NDArray[np.int16]:
+    """Returns the ADC buffer in raw units from specified position and
+    desired size. Output buffer must be at least 'size' long.
+
+    Parameters
+    ----------
+    channel
+        Channel A or B for which we want to retrieve the ADC buffer.
+    pos
+        Starting position of the ADC buffer to retrieve.
+    np_buffer
+        The output buffer gets filled with the selected part of the ADC
+        buffer.
+    size
+        Length of the ADC buffer to retrieve. Returns length of filled
+        buffer. In case of too small buffer, required size is returned.
+
+    """
+
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.int16)
+
+    __status_code = rp.rp_AcqGetDataRawNP(channel.value, pos, np_buffer)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetDataRawNP",
+            _to_debug(channel.value, pos, np_buffer),
+            __status_code,
+        )
+
+    return np_buffer
 
 
 def get_data_raw_with_calib(
@@ -914,10 +1920,10 @@ def get_data_raw_with_calib(
 
     """
 
-    buffer = rp.i16Buffer(size)
+    buffer = rp.iBuffer(size)
 
     __status_code, __size, __buffer = rp.rp_AcqGetDataRawWithCalib(
-        channel.value, pos, size, buffer.cast()
+        channel.value, pos, size, buffer
     )
 
     if __status_code != StatusCode.OK.value:
@@ -930,6 +1936,45 @@ def get_data_raw_with_calib(
     __arr_buffer = np.fromiter(buffer, dtype=np.int16, count=__size)
 
     return __arr_buffer
+
+
+def get_data_raw_with_calib_np(
+    channel: constants.Channel,
+    pos: int,
+    size: int = constants.ADC_BUFFER_SIZE,
+    np_buffer: npt.NDArray[np.int16] | None = None,
+) -> npt.NDArray[np.int16]:
+    """Returns the ADC buffer in calibrated raw units from specified position
+    and desired size. Output buffer must be at least 'size' long.
+
+    Parameters
+    ----------
+    channel
+        Channel A or B for which we want to retrieve the ADC buffer.
+    pos
+        Starting position of the ADC buffer to retrieve.
+    np_buffer
+        The output buffer gets filled with the selected part of the ADC
+        buffer.
+    size
+        Length of the ADC buffer to retrieve. Returns length of filled
+        buffer. In case of too small buffer, required size is returned.
+
+    """
+
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.int16)
+
+    __status_code = rp.rp_AcqGetDataRawWithCalibNP(channel.value, pos, np_buffer)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetDataRawWithCalibNP",
+            _to_debug(channel.value, pos, np_buffer),
+            __status_code,
+        )
+
+    return np_buffer
 
 
 def get_oldest_data_raw(
@@ -953,10 +1998,10 @@ def get_oldest_data_raw(
 
     """
 
-    buffer = rp.i16Buffer(size)
+    buffer = rp.iBuffer(size)
 
     __status_code, __size, __buffer = rp.rp_AcqGetOldestDataRaw(
-        channel.value, size, buffer.cast()
+        channel.value, size, buffer
     )
 
     if __status_code != StatusCode.OK.value:
@@ -969,6 +2014,48 @@ def get_oldest_data_raw(
     __arr_buffer = np.fromiter(buffer, dtype=np.int16, count=__size)
 
     return __arr_buffer
+
+
+def get_oldest_data_raw_np(
+    channel: constants.Channel,
+    size: int = constants.ADC_BUFFER_SIZE,
+    np_buffer: npt.NDArray[np.int16] | None = None,
+) -> npt.NDArray[np.int16]:
+    """Returns the ADC buffer in raw units from the oldest sample to the
+    newest one. Output buffer must be at least 'size' long. CAUTION: Use
+    this method only when write pointer has stopped (Trigger happened and
+    writing stopped).
+
+    Parameters
+    ----------
+    channel
+        Channel A or B for which we want to retrieve the ADC buffer.
+    size
+        Length of the ADC buffer to retrieve. Returns length of filled
+        buffer. In case of too small buffer, required size is returned.
+
+
+    C Parameters
+    ------------
+    buffer
+        The output buffer gets filled with the selected part of the ADC
+        buffer.
+
+    """
+
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.int16)
+
+    __status_code = rp.rp_AcqGetOldestDataRawNP(channel.value, np_buffer)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetOldestDataRawNP",
+            _to_debug(channel.value, np_buffer),
+            __status_code,
+        )
+
+    return np_buffer
 
 
 def get_latest_data_raw(
@@ -990,22 +2077,58 @@ def get_latest_data_raw(
 
     """
 
-    buffer = rp.i16Buffer(size)
+    buffer = rp.iBuffer(size)
 
     __status_code, __size, __buffer = rp.rp_AcqGetLatestDataRaw(
-        channel.value, size, buffer.cast()
+        channel.value, size, buffer
     )
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
             "rp_AcqGetLatestDataRaw",
-            _to_debug(channel.value, size, buffer.cast()),
+            _to_debug(channel.value, size, buffer),
             __status_code,
         )
 
     __arr_buffer = np.fromiter(buffer, dtype=np.int16, count=__size)
 
     return __arr_buffer
+
+
+def get_latest_data_raw_np(
+    channel: constants.Channel,
+    size: int = constants.ADC_BUFFER_SIZE,
+    np_buffer: npt.NDArray[np.int16] | None = None,
+) -> npt.NDArray[np.int16]:
+    """Returns the latest ADC buffer samples in raw units. Output buffer must
+    be at least 'size' long.
+
+    Parameters
+    ----------
+    channel
+        Channel A or B for which we want to retrieve the ADC buffer.
+    np_buffer
+        The output buffer gets filled with the selected part of the ADC
+        buffer.
+    size
+        Length of the ADC buffer to retrieve. Returns length of filled
+        buffer. In case of too small buffer, required size is returned.
+
+    """
+
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.int16)
+
+    __status_code = rp.rp_AcqGetLatestDataRawNP(channel.value, np_buffer)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetLatestDataRawNP",
+            _to_debug(channel.value, np_buffer),
+            __status_code,
+        )
+
+    return np_buffer
 
 
 def get_datav(
@@ -1045,32 +2168,41 @@ def get_datav(
     return __arr_buffer
 
 
-def get_data(pos: int) -> np.ndarray:
-    """Returns the ADC buffers from specified position and desired size.
-    Output buffer must be at least 'size' long.
+def get_data_vnp(
+    channel: constants.Channel,
+    pos: int,
+    size: int = constants.ADC_BUFFER_SIZE,
+    np_buffer: npt.NDArray[np.float32] | None = None,
+) -> npt.NDArray[np.float32]:
+    """Returns the ADC buffer in Volt units from specified position and
+    desired size. Output buffer must be at least 'size' long.
 
     Parameters
     ----------
+    channel
+        Channel A or B for which we want to retrieve the ADC buffer.
     pos
         Starting position of the ADC buffer to retrieve
-    out
-        The buffer will be filled according to the settings.
-
-
-    C Parameters
-    ------------
+    np_buffer
+        The output buffer gets filled with the selected part of the ADC
+        buffer.
     size
         Length of the ADC buffer to retrieve. Returns length of filled
         buffer. In case of too small buffer, required size is returned.
 
     """
 
-    __status_code, __out = rp.rp_AcqGetData(pos)
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.float32)
+
+    __status_code = rp.rp_AcqGetDataVNP(channel.value, pos, np_buffer)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_AcqGetData", _to_debug(pos), __status_code)
+        raise RPPError(
+            "rp_AcqGetDataVNP", _to_debug(channel.value, pos, np_buffer), __status_code
+        )
 
-    return __out
+    return np_buffer
 
 
 def get_oldest_datav(
@@ -1112,10 +2244,10 @@ def get_oldest_datav(
     return __arr_buffer
 
 
-def get_oldest_datav_np(
+def get_oldest_data_vnp(
     channel: constants.Channel,
     size: int = constants.ADC_BUFFER_SIZE,
-    out: npt.NDArray | None = None,
+    np_buffer: npt.NDArray[np.float32] | None = None,
 ) -> npt.NDArray[np.float32]:
     """Returns the ADC buffer in Volt units from the oldest sample to the
     newest one. Output buffer must be at least 'size' long. CAUTION: Use
@@ -1129,31 +2261,27 @@ def get_oldest_datav_np(
     size
         Length of the ADC buffer to retrieve. Returns length of filled
         buffer. In case of too small buffer, required size is returned.
+
+
+    C Parameters
+    ------------
     buffer
         The output buffer gets filled with the selected part of the ADC
         buffer.
 
     """
 
-    if out is None:
-        buffer = np.empty(size, dtype=np.float32)
-    else:
-        if out.size > constants.ADC_BUFFER_SIZE:
-            raise ValueError(
-                f"Output buffer size {out.size} is greater than ADC buffer size {constants.ADC_BUFFER_SIZE}"
-            )
-        buffer = out
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.float32)
 
-    __status_code = rp.rp_AcqGetOldestDataVNP(channel.value, buffer)
+    __status_code = rp.rp_AcqGetOldestDataVNP(channel.value, np_buffer)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqGetOldestDataVNP",
-            _to_debug(channel.value, size, buffer),
-            __status_code,
+            "rp_AcqGetOldestDataVNP", _to_debug(channel.value, np_buffer), __status_code
         )
 
-    return buffer
+    return np_buffer
 
 
 def get_latest_datav(
@@ -1193,7 +2321,41 @@ def get_latest_datav(
     return __arr_buffer
 
 
-def get_buf_size() -> int:
+def get_latest_data_vnp(
+    channel: constants.Channel,
+    size: int = constants.ADC_BUFFER_SIZE,
+    np_buffer: npt.NDArray[np.float32] | None = None,
+) -> npt.NDArray[np.float32]:
+    """Returns the latest ADC buffer samples in Volt units. Output buffer
+    must be at least 'size' long.
+
+    Parameters
+    ----------
+    channel
+        Channel A or B for which we want to retrieve the ADC buffer.
+    np_buffer
+        The output buffer gets filled with the selected part of the ADC
+        buffer.
+    size
+        Length of the ADC buffer to retrieve. Returns length of filled
+        buffer. In case of too small buffer, required size is returned.
+
+    """
+
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.float32)
+
+    __status_code = rp.rp_AcqGetLatestDataVNP(channel.value, np_buffer)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqGetLatestDataVNP", _to_debug(channel.value, np_buffer), __status_code
+        )
+
+    return np_buffer
+
+
+def get_buf_size(size: int) -> int:
     """Returns the ADC buffer size in samples.
 
     Parameters
@@ -1203,17 +2365,61 @@ def get_buf_size() -> int:
 
     """
 
-    __status_code, __size = rp.rp_AcqGetBufSize()
+    __status_code, __size = rp.rp_AcqGetBufSize(size)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_AcqGetBufSize", _to_debug(), __status_code)
+        raise RPPError("rp_AcqGetBufSize", _to_debug(size), __status_code)
 
     return __size
+
+
+def set_bypass_filter(channel: constants.Channel, enable: bool) -> None:
+    """The function enables or disables the filter in the FPGA.
+
+    C Parameters
+    ------------
+    enabled
+        When true, the bypass is enabled, otherwise it is disabled.
+
+    """
+
+    __status_code = rp.rp_AcqSetBypassFilter(channel.value, enable)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqSetBypassFilter", _to_debug(channel.value, enable), __status_code
+        )
+
+    return
+
+
+def get_bypass_filter(channel: constants.Channel) -> bool:
+    """Gets the current filter bypass from the FPGA
+
+    Parameters
+    ----------
+    enable
+        Returns the filter bypass
+
+    """
+
+    __status_code, __enable = rp.rp_AcqGetBypassFilter(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetBypassFilter", _to_debug(channel.value), __status_code)
+
+    return __enable
 
 
 def update_acq_filter(channel: constants.Channel) -> None:
     """Sets the current calibration values from temporary memory to the FPGA
     filter
+
+    Parameters
+    ----------
+    channel
+        Channel A or B.
+
     """
 
     __status_code = rp.rp_AcqUpdateAcqFilter(channel.value)
@@ -1224,16 +2430,14 @@ def update_acq_filter(channel: constants.Channel) -> None:
     return
 
 
-def get_filter_calib_value(
-    channel: constants.Channel, coef_aa: int, coef_bb: int, coef_kk: int, coef_pp: int
-) -> tuple[int, int, int, int]:
+def get_filter_calib_value(channel: constants.Channel) -> tuple[int, int, int, int]:
     """Sets the current calibration values from temporary memory to the FPGA
     filter
 
     Parameters
     ----------
     channel
-        Channel A or B for which we want to retrieve the ADC buffer.
+        Channel A or B.
     coef_aa
         Return AA coefficient.
     coef_bb
@@ -1245,22 +2449,54 @@ def get_filter_calib_value(
 
     """
 
-    (
-        __status_code,
-        __coef_aa,
-        __coef_bb,
-        __coef_kk,
-        __coef_pp,
-    ) = rp.rp_AcqGetFilterCalibValue(channel.value, coef_aa, coef_bb, coef_kk, coef_pp)
+    __status_code, __coef_aa, __coef_bb, __coef_kk, __coef_pp = (
+        rp.rp_AcqGetFilterCalibValue(channel.value)
+    )
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
-            "rp_AcqGetFilterCalibValue",
-            _to_debug(channel.value, coef_aa, coef_bb, coef_kk, coef_pp),
-            __status_code,
+            "rp_AcqGetFilterCalibValue", _to_debug(channel.value), __status_code
         )
 
     return __coef_aa, __coef_bb, __coef_kk, __coef_pp
+
+
+def set_calib_in_fpga(channel: constants.Channel) -> None:
+    """Sets the current calibration values from temporary memory to the FPGA
+
+    Parameters
+    ----------
+    channel
+        Channel A or B.
+
+    """
+
+    __status_code = rp.rp_AcqSetCalibInFPGA(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqSetCalibInFPGA", _to_debug(channel.value), __status_code)
+
+    return
+
+
+def get_calib_in_fpga(channel: constants.Channel) -> bool:
+    """Returns whether the calibration on the FPGA was used.
+
+    Parameters
+    ----------
+    channel
+        Channel A or B.
+    state
+        Return value
+
+    """
+
+    __status_code, __state = rp.rp_AcqGetCalibInFPGA(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqGetCalibInFPGA", _to_debug(channel.value), __status_code)
+
+    return __state
 
 
 def set_ext_trigger_debouncer_us(value: float) -> None:

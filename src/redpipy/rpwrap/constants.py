@@ -1,17 +1,16 @@
 # type: ignore
 """
-redpipy.constants
-~~~~~~~~~~~~~~~~~
+    redpipy.constants
+    ~~~~~~~~~~~~~~~~~
 
-We need to ignore types as we do not have typing for rp constants.
+    We need to ignore types as we do not have typing for rp constants.
 
-original file: rp_enums.h and rp.h
-commit id: 1f7b7c35070dce637ac699d974d3648b45672f89
+    original file: rp_enums.h and rp.h
+    commit id: 1f7b7c35070dce637ac699d974d3648b45672f89
 
-:copyright: 2024 by redpipy Authors, see AUTHORS for more details.
-:license: BSD, see LICENSE for more details.
+    :copyright: 2024 by redpipy Authors, see AUTHORS for more details.
+    :license: BSD, see LICENSE for more details.
 """
-
 from __future__ import annotations
 
 import enum
@@ -245,6 +244,7 @@ ADC_BUFFER_SIZE = int(16 * 1024)
 DAC_BUFFER_SIZE = int(16 * 1024)
 SPECTR_OUT_SIG_LEN = int(2 * 1024)
 
+DMA_BUFFER_SIZE = int(16 * 1024 * 1024)
 
 RISE_FALL_MIN_RATIO = 0.0001  # ratio of rise/fall time to period
 RISE_FALL_MAX_RATIO = 0.1
@@ -280,15 +280,3 @@ class StatusCode(enum.Enum):
     EFWB = rp.RP_EFWB
     EMNC = rp.RP_EMNC
     NOTS = rp.RP_NOTS
-
-
-# DMA Memory region limits. This can be changed by changing /opt/redpitaya/dts/z10_125/dtraw.dts @buffer
-DMA_SIZE_BYTES = int(2**21)
-DMA_SIZE_SAMPLES = DMA_SIZE_BYTES // 4
-
-
-class ChannelConfig(enum.Enum):
-    CH1_ONLY = enum.auto()
-    CH2_ONLY = enum.auto()
-    BOTH_CH = enum.auto()
-    NO_CHANNELS = enum.auto()

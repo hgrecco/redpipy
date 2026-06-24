@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import pathlib
+import re
 import shutil
 import subprocess
 import textwrap
@@ -16,7 +17,32 @@ from cxxheaderparser.simple import ParsedData, parse_string
 FUNCTIONS_TO_SKIP = [
     "rp_createBuffer",
     "rp_deleteBuffer",
+    "rp_AcqGetData",
+    "rp_AcqGetDataWithCorrection"
 ]
+
+
+def parse_swig_interface(path: str) -> tuple[set, set]:
+    content = open(path).read()
+
+    output = set()
+    inout = set()
+
+    # %apply int *OUTPUT { type * name }
+    for m in re.finditer(
+        r"%apply\s+(?:unsigned\s+)?(?:long\s+long\s+|long\s+)?\w+\s*\*OUTPUT\s*\{\s*\S+\s*\*\s*(\w+)\s*\}",
+        content,
+    ):
+        output.add(m.group(1))
+
+    # %apply int *INOUT { type * name }
+    for m in re.finditer(
+        r"%apply\s+(?:unsigned\s+)?(?:long\s+long\s+|long\s+)?\w+\s*\*INOUT\s*\{\s*\S+\s*\*\s*(\w+)\s*\}",
+        content,
+    ):
+        inout.add(m.group(1))
+
+    return output, inout
 
 
 def camel_to_snake_case(name: str) -> str:
@@ -216,7 +242,12 @@ class Doc:
 
 PATH = pathlib.Path(__file__).parent
 SOURCE_PATH = PATH / "sources"
-CONVERTED_PATH = PATH / "converted"
+CONVERTED_PATH = PATH.parent / "src" / "redpipy" / "rpwrap"
+
+OUTPUT_NAMES, INOUT_NAMES = parse_swig_interface("sources/rp.i")
+
+print("OUTPUT NAMES", OUTPUT_NAMES)
+print("INOUT NAMES", INOUT_NAMES)
 
 shutil.copy(PATH / "constants.py", CONVERTED_PATH / "constants.py")
 shutil.copy(PATH / "error.py", CONVERTED_PATH / "error.py")
@@ -285,6 +316,10 @@ def to_python_type(s: str) -> str:
         return "constants." + ENUMS[s]
     elif s.startswith("rp_"):
         return "constants." + stringcase.pascalcase(s[3:].strip("_t"))  # type: ignore
+    elif s == "std":
+        # @NOTE: The only "std" instance in headers is a list of memoryviews,
+        # might not be like that in the future.
+        return "list[memoryview]"
     raise ValueError(s)
 
 
@@ -300,6 +335,15 @@ def get_buffer_string(ctype: str, buffer_size: str | int) -> str:
 
 def build_buffer_string(varname: str, ctype: str, buffer_size: str | int) -> str:
     return varname + " = " + get_buffer_string(ctype, buffer_size)
+
+
+def build_numpy_buffer_string(
+    varname: str, numpy_type: str, buffer_size: str | int
+) -> str:
+    return f"""
+    if not {varname}:
+        {varname} =  np.empty({buffer_size}, dtype={numpy_type})
+    """
 
 
 def buffer_to_numpy_array(
@@ -387,20 +431,16 @@ def parse_doc(doc: str | None) -> Doc:
             parameters[name.strip()] = doc.strip()
         elif base == "@return":
             ret = rest.strip()
+        elif base == "@note":
+            continue
         else:
-            raise Exception("Why here!")
+            raise Exception("Why here!", base)
 
     if ret is None:
         ret = ""
 
     return Doc(main.strip(), parameters, ret)
 
-
-@overload
-def get_guess(
-    parameters: list[Parameter]
-) -> tuple[Literal["*size_*buffer"], tuple[Parameter, Parameter]]:
-    ...
 
 
 def get_guess(parameters: list[Parameter]) -> tuple[str, tuple[Parameter, ...]]:
@@ -511,75 +551,130 @@ for filename in ("acq", "acq_axi", "gen", "rp"):
         for p, pnext in it:
             if p is None:
                 continue
-            if pnext and p.is_pointer and pnext.is_pointer:
-                if (p.name, pnext.name) == ("size", "buffer"):
-                    szpar, bufpar = p, pnext
-                    pre_call = [
-                        build_buffer_string(bufpar.pyname, bufpar.ctype, szpar.pyname)
-                    ]
-                    szpar.default_value = "constants.ADC_BUFFER_SIZE"
-                    def_parameters.append(szpar.as_def_parameter())
-                    call_arguments.append(szpar.pyname)
-                    call_arguments.append(bufpar.pyname)
-                    call_return_vars.append(szpar.cout_pyname)
-                    call_return_vars.append(bufpar.cout_pyname)
-                    post_call = [
-                        build_numpy_array(
-                            bufpar.arr_pyname,
-                            bufpar.numpy_type,
-                            bufpar.pyname,
-                            szpar.cout_pyname,
-                        )
-                    ]
-                    def_return_vars.append(bufpar.arr_pyname)
-                    def_return_type.append(f"npt.NDArray[{bufpar.numpy_type}]")
-                    next(it)  # consume pnext
-                    continue
-                elif (p.name, pnext.name) == ("buffer", "buffer_size"):
-                    bufpar, szpar = p, pnext
-                    pre_call = [
-                        build_buffer_string(bufpar.pyname, bufpar.ctype, szpar.pyname)
-                    ]
-                    szpar.default_value = "constants.ADC_BUFFER_SIZE"
-                    def_parameters.append(szpar.as_def_parameter())
-                    call_arguments.append(bufpar.pyname)
-                    call_arguments.append(szpar.pyname)
-                    call_return_vars.append(bufpar.cout_pyname)
-                    call_return_vars.append(szpar.cout_pyname)
-                    post_call = [
-                        build_numpy_array(
-                            bufpar.arr_pyname,
-                            bufpar.numpy_type,
-                            bufpar.pyname,
-                            szpar.cout_pyname,
-                        )
-                    ]
-                    def_return_vars.append(bufpar.arr_pyname)
-                    def_return_type.append(f"npt.NDArray[{bufpar.numpy_type}]")
-                    next(it)  # consume pnext
-                    continue
-
-            if p.is_pointer:
-                if count_pointers == 1:
-                    # unique pointer parameter, likely converted to output
-                    # call_arguments.append(p.as_call_argument())
-                    call_return_vars.append(p.cout_pyname)
-                    # def_parameters.append(p.as_def_parameter())
-                    def_return_vars.append(p.as_def_return_var())
-                    def_return_type.append(p.pytype)
+            elif pnext and (p.name, pnext.name) == ("size", "buffer"):
+                szpar, bufpar = p, pnext
+                pre_call = [
+                    build_buffer_string(bufpar.pyname, bufpar.ctype, szpar.pyname)
+                ]
+                if filename == "acq_axi":
+                    szpar.default_value = "constants.DMA_BUFFER_SIZE"
                 else:
-                    call_arguments.append(p.as_call_argument())
-                    call_return_vars.append(p.cout_pyname)
-                    def_parameters.append(p.as_def_parameter())
-                    def_return_vars.append(p.as_def_return_var())
-                    def_return_type.append(p.pytype)
-            else:
-                call_arguments.append(p.as_call_argument())
-                # call_return_vars.append(p.cout_pyname)
-                def_parameters.append(p.as_def_parameter())
-                # def_return_vars.append(p.as_def_return_var())
-                # def_return_type.append(p.pytype)
+                    szpar.default_value = "constants.ADC_BUFFER_SIZE"
+                def_parameters.append(szpar.as_def_parameter())
+                call_arguments.append(szpar.pyname)
+                call_arguments.append(bufpar.pyname)
+                call_return_vars.append(szpar.cout_pyname)
+                call_return_vars.append(bufpar.cout_pyname)
+                post_call = [
+                    build_numpy_array(
+                        bufpar.arr_pyname,
+                        bufpar.numpy_type,
+                        bufpar.pyname,
+                        szpar.cout_pyname,
+                    )
+                ]
+                def_return_vars.append(bufpar.arr_pyname)
+                def_return_type.append(f"npt.NDArray[{bufpar.numpy_type}]")
+                next(it)  # consume pnext
+                continue
 
+            elif pnext and (p.name, pnext.name) == ("buffer", "buffer_size"):
+                bufpar, szpar = p, pnext
+                pre_call = [
+                    build_buffer_string(bufpar.pyname, bufpar.ctype, szpar.pyname)
+                ]
+                if filename == "acq_axi":
+                    szpar.default_value = "constants.DMA_BUFFER_SIZE"
+                else:
+                    szpar.default_value = "constants.ADC_BUFFER_SIZE"
+                def_parameters.append(szpar.as_def_parameter())
+                call_arguments.append(bufpar.pyname)
+                call_arguments.append(szpar.pyname)
+                call_return_vars.append(bufpar.cout_pyname)
+                call_return_vars.append(szpar.cout_pyname)
+                post_call = [
+                    build_numpy_array(
+                        bufpar.arr_pyname,
+                        bufpar.numpy_type,
+                        bufpar.pyname,
+                        szpar.cout_pyname,
+                    )
+                ]
+                def_return_vars.append(bufpar.arr_pyname)
+                def_return_type.append(f"npt.NDArray[{bufpar.numpy_type}]")
+                next(it)  # consume pnext
+                continue
+            elif pnext and (p.name, pnext.name) == ("waveform", "size"):
+                bufpar, szpar = p, pnext
+                pre_call = [
+                    build_buffer_string(bufpar.pyname, bufpar.ctype, szpar.pyname)
+                ]
+                szpar.default_value = "constants.ADC_BUFFER_SIZE"
+                def_parameters.append(szpar.as_def_parameter())
+                call_arguments.append(bufpar.pyname)
+                call_arguments.append(szpar.pyname)
+                call_return_vars.append(bufpar.cout_pyname)
+                call_return_vars.append(szpar.cout_pyname)
+                post_call = [
+                    build_numpy_array(
+                        bufpar.arr_pyname,
+                        bufpar.numpy_type,
+                        bufpar.pyname,
+                        szpar.cout_pyname,
+                    )
+                ]
+                def_return_vars.append(bufpar.arr_pyname)
+                def_return_type.append(f"npt.NDArray[{bufpar.numpy_type}]")
+                next(it)  # consume pnext
+                continue
+
+            elif pnext and (p.name, pnext.name) == ("np_buffer", "size"):
+                bufpar, szpar = p, pnext
+                pre_call = [
+                    build_numpy_buffer_string(
+                        bufpar.pyname, bufpar.numpy_type, szpar.pyname
+                    )
+                ]
+                if filename == "acq_axi":
+                    szpar.default_value = "constants.DMA_BUFFER_SIZE"
+                else:
+                    szpar.default_value = "constants.ADC_BUFFER_SIZE"
+                call_arguments.append(bufpar.name)
+                def_return_vars.append(bufpar.name)
+
+                def_parameters.append(szpar.as_def_parameter())
+                def_return_type.append(f"npt.NDArray[{bufpar.numpy_type}]")
+
+                def_parameters.append(
+                    f"{bufpar.name} : npt.NDArray[{bufpar.numpy_type}] | None = None"
+                )
+                next(it)
+
+            elif p.ctype == "std" and p.name == "data":
+                # custom argout typemap, stripped from input, returned as list[memoryview]
+                call_return_vars.append(p.cout_pyname)
+                def_return_vars.append(p.cout_pyname)
+                def_return_type.append(p.pytype)
+
+            elif not p.is_pointer:
+                # plain input
+                call_arguments.append(p.as_call_argument())
+                def_parameters.append(p.as_def_parameter())
+
+            elif p.name in OUTPUT_NAMES:
+                # pure output, strip from input, add to returns
+                call_return_vars.append(p.cout_pyname)
+                def_return_vars.append(p.as_def_return_var())
+                def_return_type.append(p.pytype)
+
+            elif p.name in INOUT_NAMES:
+                call_arguments.append(p.as_call_argument())
+                call_return_vars.append(p.cout_pyname)
+                def_parameters.append(p.as_def_parameter())
+                def_return_vars.append(p.as_def_return_var())
+                def_return_type.append(p.pytype)
+            else:
+                log(f"  WARNING: unhandled pointer {p.name} ({p.ctype}*) in {func_cname}")      
         if ret.is_pointer:
             if ret.ctype == "char":
                 call_return_vars.append("__value")
@@ -642,4 +737,6 @@ for filename in ("acq", "acq_axi", "gen", "rp"):
         )
 
     subprocess.run(["ruff", "format", str(CONVERTED_PATH / pymodule_name)])
-    subprocess.run(["ruff", "--fix", str(CONVERTED_PATH / pymodule_name)])
+    subprocess.run(
+        ["ruff", "check", "--select", "I", "--fix", str(CONVERTED_PATH / pymodule_name)]
+    )

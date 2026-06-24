@@ -1,17 +1,19 @@
 """
-    redpipy.rp
-    ~~~~~~~~~~
+redpipy.rp
+~~~~~~~~~~
 
-    Pythonic wrapper for the rp package.
+Pythonic wrapper for the rp package.
 
-    original file: rp.h
-    commit id: 1f7b7c35070dce637ac699d974d3648b45672f89
+original file: rp.h
+commit id: 091fe576429543898cc10691b4de1d6465eca3ee
 
-    :copyright: 2024 by redpipy Authors, see AUTHORS for more details.
-    :license: BSD, see LICENSE for more details.
+:copyright: 2024 by redpipy Authors, see AUTHORS for more details.
+:license: BSD, see LICENSE for more details.
 """
 from __future__ import annotations
 
+import numpy as np
+import numpy.typing as npt
 import rp
 
 from . import constants
@@ -22,6 +24,17 @@ from .error import RPPError
 def _to_debug(*values):
     VALID = (int, float, str, bool)
     return tuple(value if isinstance(value, VALID) else type(value) for value in values)
+
+
+def init_adresses() -> None:
+    """ """
+
+    __status_code = rp.rp_InitAdresses()
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_InitAdresses", _to_debug(), __status_code)
+
+    return
 
 
 def init() -> None:
@@ -106,6 +119,61 @@ def get_error(error_code: int) -> str:
     return __value
 
 
+def print_house_regset() -> None:
+    """Prints a set of registers for Housekeeping."""
+
+    __status_code = rp.rp_PrintHouseRegset()
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_PrintHouseRegset", _to_debug(), __status_code)
+
+    return
+
+
+def print_osc_regset() -> None:
+    """Prints a set of registers for Oscilloscope."""
+
+    __status_code = rp.rp_PrintOscRegset()
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_PrintOscRegset", _to_debug(), __status_code)
+
+    return
+
+
+def print_asg_regset() -> None:
+    """Prints a set of registers for Arbitrary Signal Generator."""
+
+    __status_code = rp.rp_PrintAsgRegset()
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_PrintAsgRegset", _to_debug(), __status_code)
+
+    return
+
+
+def print_ams_regset() -> None:
+    """Prints a set of registers for Analog Mixed Signals (AMS)."""
+
+    __status_code = rp.rp_PrintAmsRegset()
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_PrintAmsRegset", _to_debug(), __status_code)
+
+    return
+
+
+def print_daisy_regset() -> None:
+    """Prints a set of registers for Daisy Chain."""
+
+    __status_code = rp.rp_PrintDaisyRegset()
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_PrintDaisyRegset", _to_debug(), __status_code)
+
+    return
+
+
 def enable_digital_loop(enable: bool) -> None:
     """Enable or disables digital loop. This internally connect output to
     input
@@ -168,6 +236,17 @@ def led_get_state() -> int:
         raise RPPError("rp_LEDGetState", _to_debug(), __status_code)
 
     return __state
+
+
+def get_freq_counter() -> int:
+    """ """
+
+    __status_code, __value = rp.rp_GetFreqCounter()
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GetFreqCounter", _to_debug(), __status_code)
+
+    return __value
 
 
 def gpio_n_set_direction(direction: int) -> None:
@@ -568,9 +647,7 @@ def apin_reset() -> None:
     return
 
 
-def apin_get_value(
-    pin: constants.AnalogPin, value: float, raw: int
-) -> tuple[float, int]:
+def apin_get_value(pin: constants.AnalogPin) -> tuple[float, int]:
     """Gets value from analog pin in volts.
 
     Parameters
@@ -584,12 +661,10 @@ def apin_get_value(
 
     """
 
-    __status_code, __value, __raw = rp.rp_ApinGetValue(pin.value, value, raw)
+    __status_code, __value, __raw = rp.rp_ApinGetValue(pin.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_ApinGetValue", _to_debug(pin.value, value, raw), __status_code
-        )
+        raise RPPError("rp_ApinGetValue", _to_debug(pin.value), __status_code)
 
     return __value, __raw
 
@@ -654,9 +729,7 @@ def apin_set_value_raw(pin: constants.AnalogPin, value: int) -> None:
     return
 
 
-def apin_get_range(
-    pin: constants.AnalogPin, min_val: float, max_val: float
-) -> tuple[float, float]:
+def apin_get_range(pin: constants.AnalogPin) -> tuple[float, float]:
     """Gets range in volts on specific pin.
 
     Parameters
@@ -670,19 +743,15 @@ def apin_get_range(
 
     """
 
-    __status_code, __min_val, __max_val = rp.rp_ApinGetRange(
-        pin.value, min_val, max_val
-    )
+    __status_code, __min_val, __max_val = rp.rp_ApinGetRange(pin.value)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_ApinGetRange", _to_debug(pin.value, min_val, max_val), __status_code
-        )
+        raise RPPError("rp_ApinGetRange", _to_debug(pin.value), __status_code)
 
     return __min_val, __max_val
 
 
-def ai_pin_get_value(pin: int, value: float, raw: int) -> tuple[float, int]:
+def ai_pin_get_value(pin: int) -> tuple[float, int]:
     """Gets value from analog pin in volts.
 
     Parameters
@@ -696,10 +765,10 @@ def ai_pin_get_value(pin: int, value: float, raw: int) -> tuple[float, int]:
 
     """
 
-    __status_code, __value, __raw = rp.rp_AIpinGetValue(pin, value, raw)
+    __status_code, __value, __raw = rp.rp_AIpinGetValue(pin)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_AIpinGetValue", _to_debug(pin, value, raw), __status_code)
+        raise RPPError("rp_AIpinGetValue", _to_debug(pin), __status_code)
 
     return __value, __raw
 
@@ -735,7 +804,7 @@ def ao_pin_reset() -> None:
     return
 
 
-def ao_pin_get_value(pin: int, value: float, raw: int) -> tuple[float, int]:
+def ao_pin_get_value(pin: int) -> tuple[float, int]:
     """Gets value from analog pin in volts.
 
     Parameters
@@ -749,10 +818,10 @@ def ao_pin_get_value(pin: int, value: float, raw: int) -> tuple[float, int]:
 
     """
 
-    __status_code, __value, __raw = rp.rp_AOpinGetValue(pin, value, raw)
+    __status_code, __value, __raw = rp.rp_AOpinGetValue(pin)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError("rp_AOpinGetValue", _to_debug(pin, value, raw), __status_code)
+        raise RPPError("rp_AOpinGetValue", _to_debug(pin), __status_code)
 
     return __value, __raw
 
@@ -817,7 +886,7 @@ def ao_pin_set_value_raw(pin: int, value: int) -> None:
     return
 
 
-def ao_pin_get_range(pin: int, min_val: float, max_val: float) -> tuple[float, float]:
+def ao_pin_get_range(pin: int) -> tuple[float, float]:
     """Gets range in volts on specific pin.
 
     Parameters
@@ -831,12 +900,10 @@ def ao_pin_get_range(pin: int, min_val: float, max_val: float) -> tuple[float, f
 
     """
 
-    __status_code, __min_val, __max_val = rp.rp_AOpinGetRange(pin, min_val, max_val)
+    __status_code, __min_val, __max_val = rp.rp_AOpinGetRange(pin)
 
     if __status_code != StatusCode.OK.value:
-        raise RPPError(
-            "rp_AOpinGetRange", _to_debug(pin, min_val, max_val), __status_code
-        )
+        raise RPPError("rp_AOpinGetRange", _to_debug(pin), __status_code)
 
     return __min_val, __max_val
 
@@ -893,3 +960,39 @@ def get_pll_control_locked() -> bool:
         raise RPPError("rp_GetPllControlLocked", _to_debug(), __status_code)
 
     return __status
+
+
+def set_external_trigger_level(value: float) -> None:
+    """Only works with Redpitaya 250-12 otherwise returns RP_NOTS
+
+    Parameters
+    ----------
+    value
+        Trigger level. Positive value.
+
+    """
+
+    __status_code = rp.rp_SetExternalTriggerLevel(value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_SetExternalTriggerLevel", _to_debug(value), __status_code)
+
+    return
+
+
+def get_external_trigger_level() -> float:
+    """Only works with Redpitaya 250-12 otherwise returns RP_NOTS
+
+    Parameters
+    ----------
+    value
+        Returns the trigger level.
+
+    """
+
+    __status_code, __value = rp.rp_GetExternalTriggerLevel()
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_GetExternalTriggerLevel", _to_debug(), __status_code)
+
+    return __value

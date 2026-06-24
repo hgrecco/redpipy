@@ -244,6 +244,7 @@ ADC_BUFFER_SIZE = int(16 * 1024)
 DAC_BUFFER_SIZE = int(16 * 1024)
 SPECTR_OUT_SIG_LEN = int(2 * 1024)
 
+DMA_BUFFER_SIZE = int(16 * 1024 * 1024)
 
 RISE_FALL_MIN_RATIO = 0.0001  # ratio of rise/fall time to period
 RISE_FALL_MAX_RATIO = 0.1

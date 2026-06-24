@@ -5,12 +5,11 @@ redpipy.acq_axi
 Pythonic wrapper for the rp package.
 
 original file: rp_acq_axi.h
-commit id: 1f7b7c35070dce637ac699d974d3648b45672f89
+commit id: 091fe576429543898cc10691b4de1d6465eca3ee
 
 :copyright: 2024 by redpipy Authors, see AUTHORS for more details.
 :license: BSD, see LICENSE for more details.
 """
-
 from __future__ import annotations
 
 import numpy as np
@@ -49,7 +48,7 @@ def get_buffer_fill_state(channel: constants.Channel) -> bool:
     return __state
 
 
-def set_decimation_factor(decimation: constants.Decimation) -> None:
+def set_decimation_factor(decimation: int) -> None:
     """Sets the decimation used at acquiring signal for AXI. You can specify
     values in the range (1,2,4,8,16-65536)
 
@@ -60,11 +59,38 @@ def set_decimation_factor(decimation: constants.Decimation) -> None:
 
     """
 
-    __status_code = rp.rp_AcqAxiSetDecimationFactor(decimation.value)
+    __status_code = rp.rp_AcqAxiSetDecimationFactor(decimation)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
             "rp_AcqAxiSetDecimationFactor", _to_debug(decimation), __status_code
+        )
+
+    return
+
+
+def set_decimation_factor_ch(channel: constants.Channel, decimation: int) -> None:
+    """Sets the decimation used at acquiring signal for AXI. You can specify
+    values in the range (1,2,4,8,16-65536) This channel separation feature
+    works with FPGA support. You can also enable function forwarding via
+    rp_AcqSetSplitTriggerPass if this mode is not available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    decimation
+        Decimation values
+
+    """
+
+    __status_code = rp.rp_AcqAxiSetDecimationFactorCh(channel.value, decimation)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqAxiSetDecimationFactorCh",
+            _to_debug(channel.value, decimation),
+            __status_code,
         )
 
     return
@@ -84,6 +110,31 @@ def get_decimation_factor() -> int:
 
     if __status_code != StatusCode.OK.value:
         raise RPPError("rp_AcqAxiGetDecimationFactor", _to_debug(), __status_code)
+
+    return __decimation
+
+
+def get_decimation_factor_ch(channel: constants.Channel) -> int:
+    """Gets the decimation used at acquiring signal. This channel separation
+    feature works with FPGA support. You can also enable function
+    forwarding via rp_AcqSetSplitTriggerPass if this mode is not
+    available.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    decimation
+        Decimation values
+
+    """
+
+    __status_code, __decimation = rp.rp_AcqAxiGetDecimationFactorCh(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqAxiGetDecimationFactorCh", _to_debug(channel.value), __status_code
+        )
 
     return __decimation
 
@@ -224,7 +275,7 @@ def enable(channel: constants.Channel, enable: bool) -> None:
 
 
 def get_data_raw(
-    channel: constants.Channel, pos: int, size: int = constants.ADC_BUFFER_SIZE
+    channel: constants.Channel, pos: int, size: int = constants.DMA_BUFFER_SIZE
 ) -> npt.NDArray[np.int16]:
     """Returns the AXI ADC buffer in raw units from specified position and
     desired size. Output buffer must be at least 'size' long.
@@ -244,10 +295,10 @@ def get_data_raw(
 
     """
 
-    buffer = rp.i16Buffer(size)
+    buffer = rp.iBuffer(size)
 
     __status_code, __size, __buffer = rp.rp_AcqAxiGetDataRaw(
-        channel.value, pos, size, buffer.cast()
+        channel.value, pos, size, buffer
     )
 
     if __status_code != StatusCode.OK.value:
@@ -262,8 +313,84 @@ def get_data_raw(
     return __arr_buffer
 
 
+def get_data_raw_direct(
+    channel: constants.Channel, pos: int, size: int
+) -> list[memoryview]:
+    """The function returns a list of memory areas containing ADC values
+    without copying the data.
+
+    Parameters
+    ----------
+    channel
+        Channel A or B for which we want to retrieve the ADC buffer.
+    pos
+        Starting position of the ADC buffer to retrieve.
+    size
+        Length of the ADC buffer to retrieve.  The value may be larger
+        than the buffer size. Then the data will be returned cyclically
+        over the buffer.
+    data
+        List of memory areas containing data.
+
+    """
+
+    __status_code, __data = rp.rp_AcqAxiGetDataRawDirect(channel.value, pos, size)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqAxiGetDataRawDirect",
+            _to_debug(channel.value, pos, size),
+            __status_code,
+        )
+
+    return __data
+
+
+def get_data_raw_np(
+    channel: constants.Channel,
+    pos: int,
+    size: int = constants.DMA_BUFFER_SIZE,
+    np_buffer: npt.NDArray[np.int16] | None = None,
+) -> npt.NDArray[np.int16]:
+    """Returns the AXI ADC buffer in raw units from specified position and
+    desired size. Output buffer must be at least 'size' long.
+
+    Parameters
+    ----------
+    channel
+        Channel A or B for which we want to retrieve the ADC buffer.
+    pos
+        Starting position of the ADC buffer to retrieve.
+    size
+        Length of the ADC buffer to retrieve. Returns length of filled
+        buffer. In case of too small buffer, required size is returned.
+
+
+    C Parameters
+    ------------
+    buffer
+        The output buffer gets filled with the selected part of the ADC
+        buffer.
+
+    """
+
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.int16)
+
+    __status_code = rp.rp_AcqAxiGetDataRawNP(channel.value, pos, np_buffer)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqAxiGetDataRawNP",
+            _to_debug(channel.value, pos, np_buffer),
+            __status_code,
+        )
+
+    return np_buffer
+
+
 def get_datav(
-    channel: constants.Channel, pos: int, size: int = constants.ADC_BUFFER_SIZE
+    channel: constants.Channel, pos: int, size: int = constants.DMA_BUFFER_SIZE
 ) -> npt.NDArray[np.float32]:
     """Returns the AXI ADC buffer in Volt units from specified position and
     desired size. Output buffer must be at least 'size' long.
@@ -301,11 +428,11 @@ def get_datav(
     return __arr_buffer
 
 
-def get_datav_np(
+def get_data_vnp(
     channel: constants.Channel,
     pos: int,
-    size: int = constants.ADC_BUFFER_SIZE,
-    out: npt.NDArray | None = None,
+    size: int = constants.DMA_BUFFER_SIZE,
+    np_buffer: npt.NDArray[np.float32] | None = None,
 ) -> npt.NDArray[np.float32]:
     """Returns the AXI ADC buffer in Volt units from specified position and
     desired size. Output buffer must be at least 'size' long.
@@ -319,31 +446,29 @@ def get_datav_np(
     size
         Length of the ADC buffer to retrieve. Returns length of filled
         buffer. In case of too small buffer, required size is returned.
+
+
+    C Parameters
+    ------------
     buffer
         The output buffer gets filled with the selected part of the ADC
         buffer.
 
     """
 
-    if out is None:
-        buffer = np.empty(size, dtype=np.float32)
-    else:
-        if out.size > constants.DMA_SIZE_SAMPLES:
-            raise ValueError(
-                f"Output buffer size {out.size} is greater than ADC buffer size {constants.ADC_BUFFER_SIZE}"
-            )
-        buffer = out
+    if not np_buffer:
+        np_buffer = np.empty(size, dtype=np.float32)
 
-    __status_code = rp.rp_AcqAxiGetDataVNP(channel.value, pos, buffer)
+    __status_code = rp.rp_AcqAxiGetDataVNP(channel.value, pos, np_buffer)
 
     if __status_code != StatusCode.OK.value:
         raise RPPError(
             "rp_AcqAxiGetDataVNP",
-            _to_debug(channel.value, pos, buffer),
+            _to_debug(channel.value, pos, np_buffer),
             __status_code,
         )
 
-    return buffer
+    return np_buffer
 
 
 def set_buffer_samples(channel: constants.Channel, address: int, samples: int) -> None:
@@ -401,3 +526,46 @@ def set_buffer_bytes(channel: constants.Channel, address: int, size: int) -> Non
         )
 
     return
+
+
+def set_offset(channel: constants.Channel, value: float) -> None:
+    """Adds a voltage offset when requesting data from AXI buffers. Only
+    affects float and double data types. Raw data remains unchanged.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    value
+        Offset value in volts
+
+    """
+
+    __status_code = rp.rp_AcqAxiSetOffset(channel.value, value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError(
+            "rp_AcqAxiSetOffset", _to_debug(channel.value, value), __status_code
+        )
+
+    return
+
+
+def get_offset(channel: constants.Channel) -> float:
+    """Returns the offset value.
+
+    Parameters
+    ----------
+    channel
+        Channel A, B, C or D
+    value
+        Offset value in volts
+
+    """
+
+    __status_code, __value = rp.rp_AcqAxiGetOffset(channel.value)
+
+    if __status_code != StatusCode.OK.value:
+        raise RPPError("rp_AcqAxiGetOffset", _to_debug(channel.value), __status_code)
+
+    return __value
